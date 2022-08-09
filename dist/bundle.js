@@ -110,7 +110,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ZzqReact__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ZzqReact */ "./react15/src/ZzqReact/index.js");
 
 console.log(_ZzqReact__WEBPACK_IMPORTED_MODULE_0__["default"]);
-console.log(_ZzqReact__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "1"));
+console.log(_ZzqReact__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", {
+  className: "container"
+}, "1"));
 })();
 
 /******/ })()
