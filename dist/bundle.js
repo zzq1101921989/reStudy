@@ -85,7 +85,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ mountReactElement)
 /* harmony export */ });
-/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./index */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+
 
 /**
  * 当前处理的只是普通的Vdom对象，直接根据type去创建元素即可
@@ -100,6 +102,7 @@ function mountReactElement(vDom, container) {
     newElement = document.createTextNode(vDom.props.textContent);
   } else {
     newElement = document.createElement(vDom.type);
+    (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, vDom.props);
   } // 如果还存在子节点的情况？
 
 
@@ -107,7 +110,7 @@ function mountReactElement(vDom, container) {
 
   if (children.length) {
     children.forEach(function (child) {
-      (0,_index__WEBPACK_IMPORTED_MODULE_0__["default"])(child, newElement);
+      (0,_index__WEBPACK_IMPORTED_MODULE_1__["default"])(child, newElement);
     });
   } // 添加并且挂载节点
 
@@ -138,6 +141,107 @@ __webpack_require__.r(__webpack_exports__);
 
 function render(vDom, container, oldDom) {
   (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom, container, oldDom);
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/updateNodeElementAttr.js":
+/*!**********************************************************!*\
+  !*** ./react15/src/ZzqReactDom/updateNodeElementAttr.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ updateNodeElementAttr)
+/* harmony export */ });
+/**
+ * 更新节点的属性，比如className、实践、style、type、value、data-xxx等
+ * @param {*} element 需要绑定属性的html元素
+ * @param {*} props 属性对象，key代表属性名称，value代表属性的值
+ */
+function updateNodeElementAttr(element, props) {
+  // 正常的进行遍历
+  Object.keys(props).forEach(function (propName) {
+    var propValue = props[propName]; // 绑定事件
+
+    if (isBindEvent(propName)) {
+      var eventName = propName.toLowerCase().slice(2);
+      element.addEventListener(eventName, propValue);
+    } // 绑定表单的属性
+    else if (isBindInputHtmlAttr(propName)) {
+      element[propName] = propValue;
+    } // 是否绑定类名
+    else if (isBindClassName(propName)) {
+      element.setAttribute("class", propValue);
+    } // 行内样式表
+    else if (isBindStyle(propName)) {
+      handlerCssStyle(element, propValue);
+    } else if (propName !== "children") {
+      element.setAttribute(propName, propValue);
+    }
+  });
+}
+/**
+ * 当前的属性是否是事件属性
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+function isBindEvent(key) {
+  return key.slice(0, 2) === "on";
+}
+/**
+ * 当前的属性是否是表单相关的
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindInputHtmlAttr(key) {
+  return ["value", "checked"].includes(key);
+}
+/**
+ * 当前的属性是否是类名
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindClassName(key) {
+  return key === "className";
+}
+/**
+ * 当前的属性是否是行内样式
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindStyle(key) {
+  return key === "style";
+}
+/**
+ * 处理style样式
+ * @param {HTMLElement} element
+ * @param {Object} styleValue
+ * @return {string} 返回的是 width: 100px;height: 100px 类似这种css文本
+ */
+
+
+function handlerCssStyle(element, styleValue) {
+  var cssText = "";
+
+  if (styleValue instanceof Object) {
+    Object.keys(styleValue).map(function (propName) {
+      var value = styleValue[propName];
+      element.style[propName] = value;
+    });
+  } else {
+    throw new Error("暂时只支持传入对象类型的style属性");
+  }
+
+  return cssText;
 }
 
 /***/ }),
@@ -3069,10 +3173,26 @@ __webpack_require__.r(__webpack_exports__);
 console.log(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"]);
 var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
   className: "container"
-}, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("p", null, "\u8FD9\u662F\u6A58\u5B50"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", null, "\u8FD9\u662F\u6309\u94AE"), "\u4F4D\u7F6E"),  true && _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "222"),  false && 0, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("input", {
+}, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+  "data-text": "text"
+}, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("p", null, "\u8FD9\u662F\u6A58\u5B50"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+  onClick: function onClick() {
+    console.log('按钮的方法');
+  }
+}, "\u8FD9\u662F\u6309\u94AE"), "\u4F4D\u7F6E"),  true && _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "222"),  false && 0, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("input", {
   type: "text",
   value: "123"
-}), "\u8FD9\u53EA\u662F\u4E00\u4E2A\u6587\u5B57");
+}), "\u8FD9\u53EA\u662F\u4E00\u4E2A\u6587\u5B57", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+  style: {
+    width: '100px',
+    height: '100px',
+    backgroundColor: '#000',
+    borderRadius: '50%',
+    textAlign: 'center',
+    lineHeight: '100px',
+    color: '#fff'
+  }
+}, "\u8FD9\u662F\u4E00\u4E2A\u7403"));
 _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom, document.querySelector('#root'));
 })();
 

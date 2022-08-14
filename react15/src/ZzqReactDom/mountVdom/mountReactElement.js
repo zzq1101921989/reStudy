@@ -1,3 +1,4 @@
+import updateNodeElementAttr from '../updateNodeElementAttr';
 import mountVdom from './index';
 
 /**
@@ -11,6 +12,7 @@ export default function mountReactElement (vDom, container) {
         newElement = document.createTextNode(vDom.props.textContent);
     } else {
         newElement = document.createElement(vDom.type);
+        updateNodeElementAttr(newElement, vDom.props)
     }
     // 如果还存在子节点的情况？
     const children = vDom.props.children
