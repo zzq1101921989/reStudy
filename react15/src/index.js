@@ -29,5 +29,19 @@ const dom = (
   </div>
 );
 
-ZzqReactDom.render(dom, document.querySelector('#root'))
+const Header = () => {
+  const onClick = () => {
+    console.log('点击了')
+  }
+  return <h1 className="header" onClick={onClick}>这是一个头部的组件</h1>
+}
+
+class ClassHeader {
+  render() {
+    return <h1>这是一个类组件头部</h1>
+  }
+}
+
+// ZzqReactDom.render(dom, document.querySelector('#root'))
+ZzqReactDom.render(<ClassHeader />, document.querySelector('#root'))
 

@@ -60,7 +60,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ mountVdom)
 /* harmony export */ });
-/* harmony import */ var _mountVdom_mountReactElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../mountVdom/mountReactElement */ "./react15/src/ZzqReactDom/mountVdom/mountReactElement.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _mountComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mountComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
+/* harmony import */ var _mountReactElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mountReactElement */ "./react15/src/ZzqReactDom/mountVdom/mountReactElement.js");
+
+
 
 /**
  * 根据vdom传递过来的数据判断当前是组件还是普通的Vdom对象，处理的方式也不同
@@ -69,8 +73,110 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountVdom(vDom, container) {
-  // Component vs ReactElement
-  (0,_mountVdom_mountReactElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom, container);
+  // Component
+  if ((0,_utils__WEBPACK_IMPORTED_MODULE_0__.isComponent)(vDom)) {
+    (0,_mountComponent__WEBPACK_IMPORTED_MODULE_1__["default"])(vDom, container);
+  } // ReactElement
+  else {
+    (0,_mountReactElement__WEBPACK_IMPORTED_MODULE_2__["default"])(vDom, container);
+  }
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js":
+/*!*******************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mountComponent)
+/* harmony export */ });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _mountClassComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mountClassComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/mountClassComponent.js");
+/* harmony import */ var _mountFunctionComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mountFunctionComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/mountFunctionComponent.js");
+
+
+
+/**
+ * 函数组件挂载处理方法
+ * @param {*} vDom 虚拟dom对象
+ * @param {*} container 挂载容器
+ */
+
+function mountComponent(vDom, container) {
+  // 判断当前的是函数组件呢？还是类组件呢？
+  if ((0,_utils__WEBPACK_IMPORTED_MODULE_0__.isFunctionComponent)(vDom)) {
+    (0,_mountFunctionComponent__WEBPACK_IMPORTED_MODULE_2__["default"])(vDom, container);
+  } else {
+    (0,_mountClassComponent__WEBPACK_IMPORTED_MODULE_1__["default"])(vDom, container);
+  }
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/mountVdom/mountComponent/mountClassComponent.js":
+/*!*********************************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/mountVdom/mountComponent/mountClassComponent.js ***!
+  \*********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mountClassComponent)
+/* harmony export */ });
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .. */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+
+/**
+ * 类组件
+ * @param {*} vDom 
+ * @param {*} container 
+ */
+
+function mountClassComponent(vDom, container) {
+  var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象
+
+  var elementVirtualDom = fn.prototype.render();
+
+  if (elementVirtualDom) {
+    (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
+  } else {
+    throw new Error(fn.name + '没有返回需要渲染的元素，请好好检查一下');
+  }
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/mountVdom/mountComponent/mountFunctionComponent.js":
+/*!************************************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/mountVdom/mountComponent/mountFunctionComponent.js ***!
+  \************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mountFunctionComponent)
+/* harmony export */ });
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .. */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+
+/**
+ * 函数组件处理方法
+ * @param {*} vDom 
+ * @param {*} container 
+ */
+
+function mountFunctionComponent(vDom, container) {
+  var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象
+
+  var elementVirtualDom = fn();
+
+  if (elementVirtualDom) {
+    (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
+  } else {
+    throw new Error(fn.name + '没有返回需要渲染的元素，请好好检查一下');
+  }
 }
 
 /***/ }),
@@ -242,6 +348,36 @@ function handlerCssStyle(element, styleValue) {
   }
 
   return cssText;
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/utils.js":
+/*!******************************************!*\
+  !*** ./react15/src/ZzqReactDom/utils.js ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "isComponent": () => (/* binding */ isComponent),
+/* harmony export */   "isFunctionComponent": () => (/* binding */ isFunctionComponent)
+/* harmony export */ });
+/**
+ * 判断当前的virtualDom是属于普通的元素节点，还是组件
+ * @param {*} vDom 
+ */
+function isComponent(vDom) {
+  return vDom.type && typeof vDom.type === 'function';
+}
+/**
+ * 判断当前的virtualDom是否是函数组件呢?
+ * @param {*} vDom 
+ */
+
+function isFunctionComponent(vDom) {
+  var type = vDom.type;
+  return type && isComponent(vDom) && !(type.prototype && type.prototype.render);
 }
 
 /***/ }),
@@ -3167,6 +3303,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _ZzqReact__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZzqReact */ "./react15/src/ZzqReact/index.js");
 /* harmony import */ var _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ZzqReactDom */ "./react15/src/ZzqReactDom/index.js");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
 
 
 
@@ -3193,7 +3335,35 @@ var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div",
     color: '#fff'
   }
 }, "\u8FD9\u662F\u4E00\u4E2A\u7403"));
-_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom, document.querySelector('#root'));
+
+var Header = function Header() {
+  var onClick = function onClick() {
+    console.log('点击了');
+  };
+
+  return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h1", {
+    className: "header",
+    onClick: onClick
+  }, "\u8FD9\u662F\u4E00\u4E2A\u5934\u90E8\u7684\u7EC4\u4EF6");
+};
+
+var ClassHeader = /*#__PURE__*/function () {
+  function ClassHeader() {
+    _classCallCheck(this, ClassHeader);
+  }
+
+  _createClass(ClassHeader, [{
+    key: "render",
+    value: function render() {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h1", null, "\u8FD9\u662F\u4E00\u4E2A\u7C7B\u7EC4\u4EF6\u5934\u90E8");
+    }
+  }]);
+
+  return ClassHeader;
+}(); // ZzqReactDom.render(dom, document.querySelector('#root'))
+
+
+_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(ClassHeader, null), document.querySelector('#root'));
 })();
 
 /******/ })()
