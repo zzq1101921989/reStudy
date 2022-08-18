@@ -136,9 +136,10 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountClassComponent(vDom, container) {
-  var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象
+  var fn = vDom.type;
+  var component = new fn(vDom.props); // 执行函数，得到需要渲染的virtualDom对象
 
-  var elementVirtualDom = fn.prototype.render();
+  var elementVirtualDom = component.render();
 
   if (elementVirtualDom) {
     (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
@@ -159,23 +160,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ mountFunctionComponent)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .. */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! . */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _mountReactElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../mountReactElement */ "./react15/src/ZzqReactDom/mountVdom/mountReactElement.js");
+
+
 
 /**
  * 函数组件处理方法
- * @param {*} vDom 
- * @param {*} container 
+ * @param {*} vDom
+ * @param {*} container
  */
 
 function mountFunctionComponent(vDom, container) {
-  var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象
+  var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象/组件
 
-  var elementVirtualDom = fn();
+  var render = fn(vDom.props || {});
 
-  if (elementVirtualDom) {
-    (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
+  if (render) {
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_1__.isComponent)(render)) {
+      (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(render, container);
+    } else {
+      (0,_mountReactElement__WEBPACK_IMPORTED_MODULE_2__["default"])(render, container);
+    }
   } else {
-    throw new Error(fn.name + '没有返回需要渲染的元素，请好好检查一下');
+    throw new Error(fn.name + "没有返回需要渲染的元素，请好好检查一下");
   }
 }
 
@@ -382,6 +391,32 @@ function isFunctionComponent(vDom) {
 
 /***/ }),
 
+/***/ "./react15/src/ZzqReact/Component.js":
+/*!*******************************************!*\
+  !*** ./react15/src/ZzqReact/Component.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Component)
+/* harmony export */ });
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Component = /*#__PURE__*/_createClass(function Component(props) {
+  _classCallCheck(this, Component);
+
+  this.props = props;
+});
+
+
+
+/***/ }),
+
 /***/ "./react15/src/ZzqReact/createElement.js":
 /*!***********************************************!*\
   !*** ./react15/src/ZzqReact/createElement.js ***!
@@ -439,10 +474,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _createElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createElement */ "./react15/src/ZzqReact/createElement.js");
+/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Component */ "./react15/src/ZzqReact/Component.js");
+/* harmony import */ var _createElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createElement */ "./react15/src/ZzqReact/createElement.js");
+
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  createElement: _createElement__WEBPACK_IMPORTED_MODULE_0__["default"]
+  createElement: _createElement__WEBPACK_IMPORTED_MODULE_1__["default"],
+  Component: _Component__WEBPACK_IMPORTED_MODULE_0__["default"]
 });
 
 /***/ }),
@@ -3303,11 +3341,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _ZzqReact__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ZzqReact */ "./react15/src/ZzqReact/index.js");
 /* harmony import */ var _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ZzqReactDom */ "./react15/src/ZzqReactDom/index.js");
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 
 
@@ -3336,7 +3390,28 @@ var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div",
   }
 }, "\u8FD9\u662F\u4E00\u4E2A\u7403"));
 
-var Header = function Header() {
+var ClassHeader = /*#__PURE__*/function (_ZzqReact$Component) {
+  _inherits(ClassHeader, _ZzqReact$Component);
+
+  var _super = _createSuper(ClassHeader);
+
+  function ClassHeader(props) {
+    _classCallCheck(this, ClassHeader);
+
+    return _super.call(this, props);
+  }
+
+  _createClass(ClassHeader, [{
+    key: "render",
+    value: function render() {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u59D3\u540D: ", this.props.name), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u5E74\u9F84: ", this.props.age));
+    }
+  }]);
+
+  return ClassHeader;
+}(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].Component);
+
+var Header = function Header(props) {
   var onClick = function onClick() {
     console.log('点击了');
   };
@@ -3344,26 +3419,16 @@ var Header = function Header() {
   return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h1", {
     className: "header",
     onClick: onClick
-  }, "\u8FD9\u662F\u4E00\u4E2A\u5934\u90E8\u7684\u7EC4\u4EF6");
-};
-
-var ClassHeader = /*#__PURE__*/function () {
-  function ClassHeader() {
-    _classCallCheck(this, ClassHeader);
-  }
-
-  _createClass(ClassHeader, [{
-    key: "render",
-    value: function render() {
-      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h1", null, "\u8FD9\u662F\u4E00\u4E2A\u7C7B\u7EC4\u4EF6\u5934\u90E8");
-    }
-  }]);
-
-  return ClassHeader;
-}(); // ZzqReactDom.render(dom, document.querySelector('#root'))
+  }, props.title, "\u8FD9\u662F\u4E00\u4E2A\u5934\u90E8\u7684\u7EC4\u4EF6", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(ClassHeader, {
+    name: "zzq",
+    age: "18"
+  }));
+}; // ZzqReactDom.render(dom, document.querySelector('#root'))
 
 
-_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(ClassHeader, null), document.querySelector('#root'));
+_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(Header, {
+  title: "\u8FD9\u662F\u53C2\u6570\u7684\u5934\u90E8\u4FE1\u606F"
+}), document.querySelector('#root'));
 })();
 
 /******/ })()

@@ -29,19 +29,31 @@ const dom = (
   </div>
 );
 
-const Header = () => {
+class ClassHeader extends ZzqReact.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return <div>
+      <div>姓名: {this.props.name}</div>
+      <div>年龄: {this.props.age}</div>
+    </div>
+  }
+}
+
+const Header = (props) => {
   const onClick = () => {
     console.log('点击了')
   }
-  return <h1 className="header" onClick={onClick}>这是一个头部的组件</h1>
+  return <h1 className="header" onClick={onClick}>
+    {props.title}
+    这是一个头部的组件
+    <ClassHeader name='zzq' age='18' />
+  </h1>
 }
 
-class ClassHeader {
-  render() {
-    return <h1>这是一个类组件头部</h1>
-  }
-}
+
 
 // ZzqReactDom.render(dom, document.querySelector('#root'))
-ZzqReactDom.render(<ClassHeader />, document.querySelector('#root'))
+ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
 
