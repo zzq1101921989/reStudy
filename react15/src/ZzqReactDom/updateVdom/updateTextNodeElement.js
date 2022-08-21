@@ -3,7 +3,7 @@
  * @param {*} vDom 最新的虚拟dom对象
  * @param {*} oldDom 旧的HTML元素
  */
-export default function updateNodeElementText (vDom, oldDom) {
+export default function updateTextNodeElement (vDom, oldDom) {
     oldDom.textContent = vDom.props.textContent
     oldDom._virtualDom = vDom
     return oldDom

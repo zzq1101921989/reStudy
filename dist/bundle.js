@@ -277,28 +277,51 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /**
  * 更新节点的属性，比如className、实践、style、type、value、data-xxx等
- * @param {*} element 需要绑定属性的html元素
- * @param {*} props 属性对象，key代表属性名称，value代表属性的值
+ * @param {HTMLElement} element 需要绑定属性的html元素
+ * @param {*} newProps 新的属性对象，key代表属性名称，value代表属性的值
+ * @param {*} oldProps 旧的属性对象，用于和新的props作对比，从而找出差异的部分
  */
-function updateNodeElementAttr(element, props) {
+function updateNodeElementAttr(element, newProps) {
+  var oldProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   // 正常的进行遍历
-  Object.keys(props).forEach(function (propName) {
-    var propValue = props[propName]; // 绑定事件
+  Object.keys(newProps).forEach(function (propName) {
+    var newPropValue = newProps[propName];
+    var oldPropValue = oldProps[propName];
 
-    if (isBindEvent(propName)) {
-      var eventName = propName.toLowerCase().slice(2);
-      element.addEventListener(eventName, propValue);
-    } // 绑定表单的属性
-    else if (isBindInputHtmlAttr(propName)) {
-      element[propName] = propValue;
-    } // 是否绑定类名
-    else if (isBindClassName(propName)) {
-      element.setAttribute("class", propValue);
-    } // 行内样式表
-    else if (isBindStyle(propName)) {
-      handlerCssStyle(element, propValue);
-    } else if (propName !== "children") {
-      element.setAttribute(propName, propValue);
+    if (newPropValue !== oldPropValue) {
+      // 绑定事件
+      if (isBindEvent(propName)) {
+        var eventName = propName.toLowerCase().slice(2);
+        element.addEventListener(eventName, newPropValue);
+
+        if (oldPropValue) {
+          element.removeEventListener(eventName, oldPropValue);
+        }
+      } // 绑定表单的属性
+      else if (isBindInputHtmlAttr(propName)) {
+        element[propName] = newPropValue;
+      } // 是否绑定类名
+      else if (isBindClassName(propName)) {
+        element.setAttribute("class", newPropValue);
+      } // 行内样式表
+      else if (isBindStyle(propName)) {
+        handlerCssStyle(element, newPropValue);
+      } else if (propName !== "children") {
+        element.setAttribute(propName, newPropValue);
+      }
+    }
+  }); // 既然有了oldProps，那就证明是更新的时候了，看看有没有需要删除的属性
+
+  Object.keys(oldProps).forEach(function (propName) {
+    var newPropValue = newProps[propName];
+    var oldPropValue = oldProps[propName];
+
+    if (!newPropValue) {
+      if (isBindEvent(propName)) {
+        element.removeEventListener(propName, oldPropValue);
+      } else {
+        element.removeAttribute(propName);
+      }
     }
   });
 }
@@ -377,58 +400,61 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ updateVdom)
 /* harmony export */ });
 /* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
-/* harmony import */ var _updateElementText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./updateElementText */ "./react15/src/ZzqReactDom/updateVdom/updateElementText.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+
 
 
 /**
  * diff对比节点，更新元素属性，元素内容等
- * @param {*} vDom 虚拟dom对象
+ * @param {*} newVdom 虚拟dom对象
  * @param {*} container 挂载容器
  * @param {*} oldDom 旧dom，用于后续的diff对比更新节点
  */
 
-function updateVdom(vDom, container, oldDom) {
+function updateVdom(newVdom, container, oldDom) {
   // 取出旧的virtualDom对比的时候需要用到
   var oldVirtualDom = oldDom._virtualDom;
 
-  if (oldVirtualDom && vDom) {
+  if (oldVirtualDom && newVdom) {
     /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
-    if (vDom.type === oldVirtualDom.type) {
-      if (vDom.type === 'text' && vDom.props.textContent !== oldVirtualDom.props.textContent) {
-        (0,_updateElementText__WEBPACK_IMPORTED_MODULE_1__["default"])(vDom, oldDom);
+    if (newVdom.type === oldVirtualDom.type) {
+      if (newVdom.type === 'text' && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
+        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_2__["default"])(newVdom, oldDom);
+      } // 加一个判断是否更新属性，因为文本没有属性的 
+      else {
+        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
       }
     }
     /* 子节点也是对比的 */
 
 
-    oldVirtualDom.props.children.forEach(function (child, index) {
-      // 子元素对应的新的vDom
-      var childNewVdom = vDom.props.children[index]; // 子元素旧的dom元素
-
+    newVdom.props.children.forEach(function (child, index) {
+      // 子元素旧的dom元素
       var childOldElement = oldDom.childNodes[index];
-      (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(childNewVdom, childOldElement.parentNode, childOldElement);
+      (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
     });
   }
 }
 
 /***/ }),
 
-/***/ "./react15/src/ZzqReactDom/updateVdom/updateElementText.js":
-/*!*****************************************************************!*\
-  !*** ./react15/src/ZzqReactDom/updateVdom/updateElementText.js ***!
-  \*****************************************************************/
+/***/ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js":
+/*!*********************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js ***!
+  \*********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ updateNodeElementText)
+/* harmony export */   "default": () => (/* binding */ updateTextNodeElement)
 /* harmony export */ });
 /**
  * 把最新的text文本节点上的内容直接更新了即可，并且对应的virtualDom也要同步更新
  * @param {*} vDom 最新的虚拟dom对象
  * @param {*} oldDom 旧的HTML元素
  */
-function updateNodeElementText(vDom, oldDom) {
+function updateTextNodeElement(vDom, oldDom) {
   oldDom.textContent = vDom.props.textContent;
   oldDom._virtualDom = vDom;
   return oldDom;
