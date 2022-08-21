@@ -14,6 +14,8 @@ export default function mountReactElement (vDom, container) {
         newElement = document.createElement(vDom.type);
         updateNodeElementAttr(newElement, vDom.props)
     }
+    // 保存元素对应的vDom，后续更新比对的时候需要用到
+    newElement._virtualDom = vDom
     // 如果还存在子节点的情况？
     const children = vDom.props.children
     if (children.length) {

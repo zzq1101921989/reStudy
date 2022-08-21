@@ -29,6 +29,31 @@ const dom = (
   </div>
 );
 
+const dom2 = (
+  <div className="container111">
+    <div data-text="text222">
+      <p>这是更新过后的一个橘子</p>
+      <button onClick={() => {
+        console.log('按钮的方法，更新了哦');
+      }}>这是按钮</button>
+      位置
+    </div>
+    {2 === 2 && <div>222</div>}
+    {2 === 1 && <div>111</div>}
+    <input type="text" value="999" />
+    这只是一个文字，但是他更新了哦
+    <div style={{
+      width: '100px',
+      height: '100px',
+      backgroundColor: '#000',
+      borderRadius: '50%',
+      textAlign: 'center',
+      lineHeight: '100px',
+      color: '#fff'
+    }}>这是一个球111</div>
+  </div>
+);
+
 class ClassHeader extends ZzqReact.Component {
   constructor(props) {
     super(props);
@@ -55,5 +80,10 @@ const Header = (props) => {
 
 
 // ZzqReactDom.render(dom, document.querySelector('#root'))
-ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
+// ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
+
+ZzqReactDom.render(dom, document.querySelector('#root'))
+setTimeout(() => {
+  ZzqReactDom.render(dom2, document.querySelector('#root'))
+}, [2000])
 

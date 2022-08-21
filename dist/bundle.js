@@ -13,6 +13,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ diff)
 /* harmony export */ });
 /* harmony import */ var _mountVdom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mountVdom */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+/* harmony import */ var _updateVdom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./updateVdom */ "./react15/src/ZzqReactDom/updateVdom/index.js");
+
 
 /**
  * diff算法去对比节点，看看是否是初始化挂载呢？还是需要通过diff算法进行对比更新节点
@@ -26,7 +28,7 @@ function diff(vDom, container, oldDom) {
     // 初始化挂载virtualDom节点
     (0,_mountVdom__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom, container);
   } else {
-    console.log('这里就是更新的操作');
+    (0,_updateVdom__WEBPACK_IMPORTED_MODULE_1__["default"])(vDom, container, oldDom);
   }
 }
 
@@ -218,8 +220,10 @@ function mountReactElement(vDom, container) {
   } else {
     newElement = document.createElement(vDom.type);
     (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, vDom.props);
-  } // 如果还存在子节点的情况？
+  } // 保存元素对应的vDom，后续更新比对的时候需要用到
 
+
+  newElement._virtualDom = vDom; // 如果还存在子节点的情况？
 
   var children = vDom.props.children;
 
@@ -250,11 +254,12 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * react挂载渲染函数，通过调用render方法，把虚拟dom转换成真实的dom挂载到容器上
  * @param {*} vDom 虚拟dom对象
- * @param {*} container 挂载容器
- * @param {*} oldDom 旧dom，用于后续的diff对比更新节点
+ * @param {HTMLElement} container 挂载容器
+ * @param {*} oldDom 旧dom，用于后续的diff对比更新节点，如果是更新阶段，默认值刚还是能够获取到的。也就是容器第一个挂载的元素
  */
 
-function render(vDom, container, oldDom) {
+function render(vDom, container) {
+  var oldDom = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : container.firstChild;
   (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom, container, oldDom);
 }
 
@@ -357,6 +362,76 @@ function handlerCssStyle(element, styleValue) {
   }
 
   return cssText;
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/updateVdom/index.js":
+/*!*****************************************************!*\
+  !*** ./react15/src/ZzqReactDom/updateVdom/index.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ updateVdom)
+/* harmony export */ });
+/* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
+/* harmony import */ var _updateElementText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./updateElementText */ "./react15/src/ZzqReactDom/updateVdom/updateElementText.js");
+
+
+/**
+ * diff对比节点，更新元素属性，元素内容等
+ * @param {*} vDom 虚拟dom对象
+ * @param {*} container 挂载容器
+ * @param {*} oldDom 旧dom，用于后续的diff对比更新节点
+ */
+
+function updateVdom(vDom, container, oldDom) {
+  // 取出旧的virtualDom对比的时候需要用到
+  var oldVirtualDom = oldDom._virtualDom;
+
+  if (oldVirtualDom && vDom) {
+    /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
+    if (vDom.type === oldVirtualDom.type) {
+      if (vDom.type === 'text' && vDom.props.textContent !== oldVirtualDom.props.textContent) {
+        (0,_updateElementText__WEBPACK_IMPORTED_MODULE_1__["default"])(vDom, oldDom);
+      }
+    }
+    /* 子节点也是对比的 */
+
+
+    oldVirtualDom.props.children.forEach(function (child, index) {
+      // 子元素对应的新的vDom
+      var childNewVdom = vDom.props.children[index]; // 子元素旧的dom元素
+
+      var childOldElement = oldDom.childNodes[index];
+      (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(childNewVdom, childOldElement.parentNode, childOldElement);
+    });
+  }
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/updateVdom/updateElementText.js":
+/*!*****************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/updateVdom/updateElementText.js ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ updateNodeElementText)
+/* harmony export */ });
+/**
+ * 把最新的text文本节点上的内容直接更新了即可，并且对应的virtualDom也要同步更新
+ * @param {*} vDom 最新的虚拟dom对象
+ * @param {*} oldDom 旧的HTML元素
+ */
+function updateNodeElementText(vDom, oldDom) {
+  oldDom.textContent = vDom.props.textContent;
+  oldDom._virtualDom = vDom;
+  return oldDom;
 }
 
 /***/ }),
@@ -3389,6 +3464,28 @@ var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div",
     color: '#fff'
   }
 }, "\u8FD9\u662F\u4E00\u4E2A\u7403"));
+var dom2 = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+  className: "container111"
+}, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+  "data-text": "text222"
+}, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("p", null, "\u8FD9\u662F\u66F4\u65B0\u8FC7\u540E\u7684\u4E00\u4E2A\u6A58\u5B50"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+  onClick: function onClick() {
+    console.log('按钮的方法，更新了哦');
+  }
+}, "\u8FD9\u662F\u6309\u94AE"), "\u4F4D\u7F6E"),  true && _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "222"),  false && 0, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("input", {
+  type: "text",
+  value: "999"
+}), "\u8FD9\u53EA\u662F\u4E00\u4E2A\u6587\u5B57\uFF0C\u4F46\u662F\u4ED6\u66F4\u65B0\u4E86\u54E6", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+  style: {
+    width: '100px',
+    height: '100px',
+    backgroundColor: '#000',
+    borderRadius: '50%',
+    textAlign: 'center',
+    lineHeight: '100px',
+    color: '#fff'
+  }
+}, "\u8FD9\u662F\u4E00\u4E2A\u7403111"));
 
 var ClassHeader = /*#__PURE__*/function (_ZzqReact$Component) {
   _inherits(ClassHeader, _ZzqReact$Component);
@@ -3424,11 +3521,13 @@ var Header = function Header(props) {
     age: "18"
   }));
 }; // ZzqReactDom.render(dom, document.querySelector('#root'))
+// ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
 
 
-_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(Header, {
-  title: "\u8FD9\u662F\u53C2\u6570\u7684\u5934\u90E8\u4FE1\u606F"
-}), document.querySelector('#root'));
+_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom, document.querySelector('#root'));
+setTimeout(function () {
+  _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom2, document.querySelector('#root'));
+}, [2000]);
 })();
 
 /******/ })()
