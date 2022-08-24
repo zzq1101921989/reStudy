@@ -210,11 +210,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ mountFunctionComponent)
 /* harmony export */ });
-/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! . */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./react15/src/ZzqReactDom/utils.js");
-/* harmony import */ var _mountReactElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../mountReactElement */ "./react15/src/ZzqReactDom/mountVdom/mountReactElement.js");
-
-
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! .. */ "./react15/src/ZzqReactDom/mountVdom/index.js");
 
 /**
  * 函数组件处理方法
@@ -225,14 +221,10 @@ __webpack_require__.r(__webpack_exports__);
 function mountFunctionComponent(vDom, container) {
   var fn = vDom.type; // 执行函数，得到需要渲染的virtualDom对象/组件
 
-  var render = fn(vDom.props || {});
+  var elementVirtualDom = fn(vDom.props || {});
 
-  if (render) {
-    if ((0,_utils__WEBPACK_IMPORTED_MODULE_1__.isComponent)(render)) {
-      (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(render, container);
-    } else {
-      (0,_mountReactElement__WEBPACK_IMPORTED_MODULE_2__["default"])(render, container);
-    }
+  if (elementVirtualDom) {
+    (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
   } else {
     throw new Error(fn.name + "没有返回需要渲染的元素，请好好检查一下");
   }
@@ -460,12 +452,6 @@ function updateVdom(newVdom, container, oldDom) {
       newVdom.props.children.forEach(function (child, index) {
         // 子元素旧的dom元素
         var childOldElement = oldDom.childNodes[index];
-
-        if (newVdom.type === "h3") {
-          console.log(childOldElement.parentNode, "childOldElement.parentNode");
-          console.log(childOldElement, "childOldElement");
-        }
-
         (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
       });
     } // 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了

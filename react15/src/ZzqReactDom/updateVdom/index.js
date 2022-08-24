@@ -29,10 +29,6 @@ export default function updateVdom(newVdom, container, oldDom) {
       newVdom.props.children.forEach((child, index) => {
         // 子元素旧的dom元素
         const childOldElement = oldDom.childNodes[index];
-        if (newVdom.type === "h3") {
-          console.log(childOldElement.parentNode, "childOldElement.parentNode");
-          console.log(childOldElement, "childOldElement");
-        }
         diff(child, childOldElement.parentNode, childOldElement);
       });
     }
