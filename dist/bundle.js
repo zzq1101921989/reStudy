@@ -52,6 +52,54 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js":
+/*!***************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/mountVdom/createDomElement.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createDomElement)
+/* harmony export */ });
+/* harmony import */ var ___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! . */ "./react15/src/ZzqReactDom/mountVdom/index.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+
+
+/**
+ * 创建dom节点，并且添加属性
+ * @param {*} vDom 虚拟Dom节点
+ * @returns 
+ */
+
+function createDomElement(vDom) {
+  var newElement = null;
+
+  if (vDom.type === 'text') {
+    newElement = document.createTextNode(vDom.props.textContent);
+  } else {
+    newElement = document.createElement(vDom.type);
+    /* 节点的属性也要更新 */
+
+    (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__["default"])(newElement, vDom.props);
+  } // 保存元素对应的vDom，后续更新比对的时候需要用到
+
+
+  newElement._virtualDom = vDom; // 如果还存在子节点的情况？
+
+  var children = vDom.props.children;
+
+  if (children.length) {
+    children.forEach(function (child) {
+      (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(child, newElement);
+    });
+  }
+
+  return newElement;
+}
+
+/***/ }),
+
 /***/ "./react15/src/ZzqReactDom/mountVdom/index.js":
 /*!****************************************************!*\
   !*** ./react15/src/ZzqReactDom/mountVdom/index.js ***!
@@ -202,9 +250,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ mountReactElement)
 /* harmony export */ });
-/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
-/* harmony import */ var _index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./index */ "./react15/src/ZzqReactDom/mountVdom/index.js");
-
+/* harmony import */ var _createDomElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
 
 /**
  * 当前处理的只是普通的Vdom对象，直接根据type去创建元素即可
@@ -213,26 +259,7 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountReactElement(vDom, container) {
-  var newElement = null;
-
-  if (vDom.type === 'text') {
-    newElement = document.createTextNode(vDom.props.textContent);
-  } else {
-    newElement = document.createElement(vDom.type);
-    (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, vDom.props);
-  } // 保存元素对应的vDom，后续更新比对的时候需要用到
-
-
-  newElement._virtualDom = vDom; // 如果还存在子节点的情况？
-
-  var children = vDom.props.children;
-
-  if (children.length) {
-    children.forEach(function (child) {
-      (0,_index__WEBPACK_IMPORTED_MODULE_1__["default"])(child, newElement);
-    });
-  } // 添加并且挂载节点
-
+  var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 添加并且挂载节点
 
   container.appendChild(newElement);
 }
@@ -400,16 +427,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ updateVdom)
 /* harmony export */ });
 /* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
-/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
-/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+/* harmony import */ var _mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mountVdom/createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+
 
 
 
 /**
  * diff对比节点，更新元素属性，元素内容等
  * @param {*} newVdom 虚拟dom对象
- * @param {*} container 挂载容器
- * @param {*} oldDom 旧dom，用于后续的diff对比更新节点
+ * @param {HTMLElement} container 挂载容器
+ * @param {HTMLElement} oldDom 旧dom，用于后续的diff对比更新节点
  */
 
 function updateVdom(newVdom, container, oldDom) {
@@ -419,21 +448,31 @@ function updateVdom(newVdom, container, oldDom) {
   if (oldVirtualDom && newVdom) {
     /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
     if (newVdom.type === oldVirtualDom.type) {
-      if (newVdom.type === 'text' && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
-        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_2__["default"])(newVdom, oldDom);
-      } // 加一个判断是否更新属性，因为文本没有属性的 
+      if (newVdom.type === "text" && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
+        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_3__["default"])(newVdom, oldDom);
+      } // 加一个判断是否更新属性，因为文本没有属性的
       else {
-        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_1__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
+        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
       }
+      /* 子节点也是对比的 */
+
+
+      newVdom.props.children.forEach(function (child, index) {
+        // 子元素旧的dom元素
+        var childOldElement = oldDom.childNodes[index];
+
+        if (newVdom.type === "h3") {
+          console.log(childOldElement.parentNode, "childOldElement.parentNode");
+          console.log(childOldElement, "childOldElement");
+        }
+
+        (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
+      });
+    } // 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了
+    else if (newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
+      var newElement = (0,_mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"])(newVdom);
+      oldDom.parentNode.replaceChild(newElement, oldDom);
     }
-    /* 子节点也是对比的 */
-
-
-    newVdom.props.children.forEach(function (child, index) {
-      // 子元素旧的dom元素
-      var childOldElement = oldDom.childNodes[index];
-      (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
-    });
   }
 }
 
@@ -3489,7 +3528,7 @@ var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div",
     lineHeight: '100px',
     color: '#fff'
   }
-}, "\u8FD9\u662F\u4E00\u4E2A\u7403"));
+}, "\u8FD9\u662F\u4E00\u4E2A\u7403"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h1", null, "\u8FD9\u662F\u4E00\u4E2A\u53D8\u5316\u7684\u6807\u9898\u54E6"));
 var dom2 = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
   className: "container111"
 }, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
@@ -3511,7 +3550,7 @@ var dom2 = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div"
     lineHeight: '100px',
     color: '#fff'
   }
-}, "\u8FD9\u662F\u4E00\u4E2A\u7403111"));
+}, "\u8FD9\u662F\u4E00\u4E2A\u7403111"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("h3", null, "\u8FD9\u662F\u4E00\u4E2A\u53D8\u5316\u7684\u6807\u9898\u54E6"));
 
 var ClassHeader = /*#__PURE__*/function (_ZzqReact$Component) {
   _inherits(ClassHeader, _ZzqReact$Component);

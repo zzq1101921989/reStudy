@@ -1,5 +1,4 @@
-import updateNodeElementAttr from '../updateNodeElementAttr';
-import mountVdom from './index';
+import createDomElement from './createDomElement';
 
 /**
  * 当前处理的只是普通的Vdom对象，直接根据type去创建元素即可
@@ -7,23 +6,7 @@ import mountVdom from './index';
  * @param {*} container 挂载容器
  */
 export default function mountReactElement (vDom, container) {
-    let newElement = null;
-    if (vDom.type === 'text') {
-        newElement = document.createTextNode(vDom.props.textContent);
-    } else {
-        newElement = document.createElement(vDom.type);
-        updateNodeElementAttr(newElement, vDom.props)
-    }
-    // 保存元素对应的vDom，后续更新比对的时候需要用到
-    newElement._virtualDom = vDom
-    // 如果还存在子节点的情况？
-    const children = vDom.props.children
-    if (children.length) {
-        children.forEach(child => {
-            mountVdom(child, newElement)
-        })
-    }
-
+    let newElement = createDomElement(vDom)
     // 添加并且挂载节点
     container.appendChild(newElement)
 }

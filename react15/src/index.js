@@ -26,6 +26,7 @@ const dom = (
       lineHeight: '100px',
       color: '#fff'
     }}>这是一个球</div>
+    <h1>这是一个变化的标题哦</h1>
   </div>
 );
 
@@ -51,6 +52,7 @@ const dom2 = (
       lineHeight: '100px',
       color: '#fff'
     }}>这是一个球111</div>
+    <h3>这是一个变化的标题哦</h3>
   </div>
 );
 

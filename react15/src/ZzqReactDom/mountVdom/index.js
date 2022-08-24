@@ -10,7 +10,7 @@ import mountReactElement from "./mountReactElement";
 export default function mountVdom(vDom, container) {
   // Component
   if (isComponent(vDom)) {
-    mountComponent(vDom, container)
+    mountComponent(vDom, container);
   }
   // ReactElement
   else {
