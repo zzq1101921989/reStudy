@@ -16,7 +16,7 @@ const dom = (
     {2 === 2 && <div>222</div>}
     {2 === 1 && <div>111</div>}
     <input type="text" value="123" />
-    这只是一个文字
+    待会这个文字就会被删除了！！！！
     <div style={{
       width: '100px',
       height: '100px',
@@ -42,7 +42,6 @@ const dom2 = (
     {2 === 2 && <div>222</div>}
     {2 === 1 && <div>111</div>}
     <input type="text" value="999" />
-    这只是一个文字，但是他更新了哦
     <div style={{
       width: '100px',
       height: '100px',

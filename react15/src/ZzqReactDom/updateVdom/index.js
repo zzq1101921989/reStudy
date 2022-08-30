@@ -31,14 +31,35 @@ export default function updateVdom(newVdom, container, oldDom) {
         const childOldElement = oldDom.childNodes[index];
         diff(child, childOldElement.parentNode, childOldElement);
       });
+      /* 查看是否有子节点被删除 */
+      updateDeleteChildren(oldDom, newVdom)
     }
     // 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了
     else if (
-      newVdom.type !== oldVirtualDom.type &&
-      typeof newVdom.type !== "function"
+      newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function"
     ) {
       const newElement = createDomElement(newVdom);
       oldDom.parentNode.replaceChild(newElement, oldDom);
+    }
+  }
+}
+
+/**
+ * 对比新旧节点，查看是否有需要被删除的节点
+ * @param {HTMLElement} oldDom 
+ * @param {*} newVdom 
+ */
+function updateDeleteChildren(oldDom, newVdom) {
+
+  const oldChildren = oldDom.childNodes;
+  const oldChildrenLen = oldChildren.length;
+  const newChildren = newVdom.props.children;
+  const newChildrenLen = newChildren.length;
+
+  /* 证明在新节点中是存在被删除的元素的 */
+  if (oldChildrenLen > newChildrenLen) {
+    for (let i  = oldChildrenLen - 1; i > newChildrenLen - 1; i--) {
+      oldChildren[i].remove();
     }
   }
 }

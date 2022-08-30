@@ -1,5 +1,5 @@
-import mountVDom from './mountVdom'
-import updateVdom from './updateVdom'
+import mountVDom from './mountVdom';
+import updateVdom from './updateVdom';
 
 /**
  * diff算法去对比节点，看看是否是初始化挂载呢？还是需要通过diff算法进行对比更新节点

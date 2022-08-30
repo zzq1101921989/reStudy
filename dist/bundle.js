@@ -454,10 +454,32 @@ function updateVdom(newVdom, container, oldDom) {
         var childOldElement = oldDom.childNodes[index];
         (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
       });
+      /* 查看是否有子节点被删除 */
+
+      updateDeleteChildren(oldDom, newVdom);
     } // 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了
-    else if (newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
+    else if (newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
       var newElement = (0,_mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"])(newVdom);
       oldDom.parentNode.replaceChild(newElement, oldDom);
+    }
+  }
+}
+/**
+ * 对比新旧节点，查看是否有需要被删除的节点
+ * @param {HTMLElement} oldDom 
+ * @param {*} newVdom 
+ */
+
+function updateDeleteChildren(oldDom, newVdom) {
+  var oldChildren = oldDom.childNodes;
+  var oldChildrenLen = oldChildren.length;
+  var newChildren = newVdom.props.children;
+  var newChildrenLen = newChildren.length;
+  /* 证明在新节点中是存在被删除的元素的 */
+
+  if (oldChildrenLen > newChildrenLen) {
+    for (var i = oldChildrenLen - 1; i > newChildrenLen - 1; i--) {
+      oldChildren[i].remove();
     }
   }
 }
@@ -3504,7 +3526,7 @@ var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div",
 }, "\u8FD9\u662F\u6309\u94AE"), "\u4F4D\u7F6E"),  true && _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "222"),  false && 0, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("input", {
   type: "text",
   value: "123"
-}), "\u8FD9\u53EA\u662F\u4E00\u4E2A\u6587\u5B57", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+}), "\u5F85\u4F1A\u8FD9\u4E2A\u6587\u5B57\u5C31\u4F1A\u88AB\u5220\u9664\u4E86\uFF01\uFF01\uFF01\uFF01", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
   style: {
     width: '100px',
     height: '100px',
@@ -3526,7 +3548,7 @@ var dom2 = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div"
 }, "\u8FD9\u662F\u6309\u94AE"), "\u4F4D\u7F6E"),  true && _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "222"),  false && 0, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("input", {
   type: "text",
   value: "999"
-}), "\u8FD9\u53EA\u662F\u4E00\u4E2A\u6587\u5B57\uFF0C\u4F46\u662F\u4ED6\u66F4\u65B0\u4E86\u54E6", _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+}), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
   style: {
     width: '100px',
     height: '100px',
