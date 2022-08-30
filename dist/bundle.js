@@ -189,7 +189,9 @@ function mountClassComponent(vDom, container) {
   var fn = vDom.type;
   var component = new fn(vDom.props); // 执行函数，得到需要渲染的virtualDom对象
 
-  var elementVirtualDom = component.render();
+  var elementVirtualDom = component.render(); // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+
+  elementVirtualDom.component = component;
 
   if (elementVirtualDom) {
     (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
@@ -251,7 +253,12 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountReactElement(vDom, container) {
-  var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 添加并且挂载节点
+  var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 这种情况就代表这个虚拟dom的产生实际上就是通过类组件的render得来的，因为在 mountClassComponent 方法中注入了这个属性
+
+  if (vDom.component) {
+    vDom.component.setDom(newElement);
+  } // 添加并且挂载节点
+
 
   container.appendChild(newElement);
 }
@@ -549,17 +556,47 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Component)
 /* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+/**
+ * 所有类组件都需要继承的父类，这个父类里面包含了 props参数，setState方法，控制子组件更新等等一些列重要的方法
+ */
+var Component = /*#__PURE__*/function () {
+  function Component(props) {
+    _classCallCheck(this, Component);
 
-var Component = /*#__PURE__*/_createClass(function Component(props) {
-  _classCallCheck(this, Component);
+    this.props = props;
+  }
 
-  this.props = props;
-});
+  _createClass(Component, [{
+    key: "setState",
+    value: function setState(state) {
+      // 先更新
+      this.state = Object.assign({}, this.state, state); // 得出最新的virtualDom
+
+      var newVirtualDom = this.render(); // 找到类组件对应的真实dom
+
+      var oldDom = this.getDom();
+      console.log(oldDom);
+    }
+  }, {
+    key: "setDom",
+    value: function setDom(dom) {
+      this._dom = dom;
+    }
+  }, {
+    key: "getDom",
+    value: function getDom() {
+      return this._dom;
+    }
+  }]);
+
+  return Component;
+}();
 
 
 
@@ -3491,6 +3528,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ZzqReactDom */ "./react15/src/ZzqReactDom/index.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -3593,14 +3632,56 @@ var Header = function Header(props) {
     name: "zzq",
     age: "18"
   }));
-}; // ZzqReactDom.render(dom, document.querySelector('#root'))
+};
+
+var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component2) {
+  _inherits(OpenMessage, _ZzqReact$Component2);
+
+  var _super2 = _createSuper(OpenMessage);
+
+  function OpenMessage(props) {
+    var _this;
+
+    _classCallCheck(this, OpenMessage);
+
+    _this = _super2.call(this, props);
+
+    _defineProperty(_assertThisInitialized(_this), "handlerUpdateTitle", function () {
+      _this.setState({
+        title: '这是一个变化的标题了'
+      });
+
+      console.log(_this.state);
+    });
+
+    _this.state = {
+      title: '这是一个默认的标题哦'
+    };
+    return _this;
+  }
+
+  _createClass(OpenMessage, [{
+    key: "render",
+    value: function render() {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        onClick: this.handlerUpdateTitle
+      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"));
+    }
+  }]);
+
+  return OpenMessage;
+}(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].Component); // ZzqReactDom.render(dom, document.querySelector('#root'))
 // ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
+// ZzqReactDom.render(dom, document.querySelector('#root'))
+// setTimeout(() => {
+//   ZzqReactDom.render(dom2, document.querySelector('#root'))
+// }, [2000])
 
 
-_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom, document.querySelector('#root'));
-setTimeout(function () {
-  _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(dom2, document.querySelector('#root'));
-}, [2000]);
+_ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessage, {
+  name: "zzq",
+  age: "18"
+}), document.querySelector('#root'));
 })();
 
 /******/ })()

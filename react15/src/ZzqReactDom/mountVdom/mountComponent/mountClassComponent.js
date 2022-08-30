@@ -8,8 +8,13 @@ import mountVdom from "..";
 export default function mountClassComponent (vDom, container) {
     const fn = vDom.type
     const component = new fn(vDom.props);
+
     // 执行函数，得到需要渲染的virtualDom对象
     const elementVirtualDom = component.render();
+
+    // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+    elementVirtualDom.component = component
+
     if (elementVirtualDom) {
         mountVdom(elementVirtualDom, container)
     } else {

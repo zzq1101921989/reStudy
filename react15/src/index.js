@@ -78,13 +78,39 @@ const Header = (props) => {
   </h1>
 }
 
+class OpenMessage extends ZzqReact.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      title: '这是一个默认的标题哦'
+    }
+  }
+  handlerUpdateTitle = () => {
+    this.setState({
+      title: '这是一个变化的标题了'
+    })
+    console.log(this.state);
+  }
+  render() {
+    return <div>
+      {this.props.name}
+      {this.props.age}
+      <div>标题内容是: {this.state.title}</div>
+      <button onClick={this.handlerUpdateTitle}>更新标题内容</button>
+    </div>
+  }
+}
+
 
 
 // ZzqReactDom.render(dom, document.querySelector('#root'))
 // ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
 
-ZzqReactDom.render(dom, document.querySelector('#root'))
-setTimeout(() => {
-  ZzqReactDom.render(dom2, document.querySelector('#root'))
-}, [2000])
+// ZzqReactDom.render(dom, document.querySelector('#root'))
+// setTimeout(() => {
+//   ZzqReactDom.render(dom2, document.querySelector('#root'))
+// }, [2000])
+ZzqReactDom.render(
+  <OpenMessage name='zzq' age='18' />, document.querySelector('#root')
+)
 
