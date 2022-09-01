@@ -6,9 +6,10 @@ import createDomElement from './createDomElement';
  * @param {*} container 挂载容器
  */
 export default function mountReactElement (vDom, container) {
+    
     let newElement = createDomElement(vDom)
 
-    // 这种情况就代表这个虚拟dom的产生实际上就是通过类组件的render得来的，因为在 mountClassComponent 方法中注入了这个属性
+    // 这种情况就代表这个虚拟dom的产生实际上就是通过 类组件 的render得来的，因为在 mountClassComponent 方法中注入了这个属性
     if (vDom.component) {
         vDom.component.setDom(newElement)
     }

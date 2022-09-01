@@ -2,8 +2,6 @@ import React from "react";
 import ZzqReact from "./ZzqReact";
 import ZzqReactDom from './ZzqReactDom';
 
-console.log(ZzqReact);
-
 const dom = (
   <div className="container">
     <div data-text="text">
@@ -78,6 +76,15 @@ const Header = (props) => {
   </h1>
 }
 
+class OpenMessageChildren extends ZzqReact.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return <div>标题内容是: {this.props.title}</div>
+  } 
+}
+
 class OpenMessage extends ZzqReact.Component {
   constructor(props) {
     super(props);
@@ -89,18 +96,17 @@ class OpenMessage extends ZzqReact.Component {
     this.setState({
       title: '这是一个变化的标题了'
     })
-    console.log(this.state);
   }
   render() {
     return <div>
       {this.props.name}
       {this.props.age}
       <div>标题内容是: {this.state.title}</div>
+      <OpenMessageChildren title={this.state.title} />
       <button onClick={this.handlerUpdateTitle}>更新标题内容</button>
     </div>
   }
 }
-
 
 
 // ZzqReactDom.render(dom, document.querySelector('#root'))

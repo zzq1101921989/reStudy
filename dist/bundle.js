@@ -253,7 +253,7 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountReactElement(vDom, container) {
-  var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 这种情况就代表这个虚拟dom的产生实际上就是通过类组件的render得来的，因为在 mountClassComponent 方法中注入了这个属性
+  var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 这种情况就代表这个虚拟dom的产生实际上就是通过 类组件 的render得来的，因为在 mountClassComponent 方法中注入了这个属性
 
   if (vDom.component) {
     vDom.component.setDom(newElement);
@@ -428,7 +428,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
 /* harmony import */ var _mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mountVdom/createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
 /* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
-/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _updateClassComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./updateClassComponent */ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js");
+/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+
+
 
 
 
@@ -445,10 +449,14 @@ function updateVdom(newVdom, container, oldDom) {
   var oldVirtualDom = oldDom._virtualDom;
 
   if (oldVirtualDom && newVdom) {
+    /* 组件类型更新 */
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isComponent)(newVdom)) {
+      updateReactCompoent(newVdom, oldVirtualDom, oldDom);
+    }
     /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
-    if (newVdom.type === oldVirtualDom.type) {
+    else if (newVdom.type === oldVirtualDom.type) {
       if (newVdom.type === "text" && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
-        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_3__["default"])(newVdom, oldDom);
+        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__["default"])(newVdom, oldDom);
       } // 加一个判断是否更新属性，因为文本没有属性的
       else {
         (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
@@ -464,10 +472,27 @@ function updateVdom(newVdom, container, oldDom) {
       /* 查看是否有子节点被删除 */
 
       updateDeleteChildren(oldDom, newVdom);
-    } // 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了
+    }
+    /* 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了 */
     else if (newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
       var newElement = (0,_mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"])(newVdom);
       oldDom.parentNode.replaceChild(newElement, oldDom);
+    }
+  }
+}
+/**
+ * 组件更新处理方法，对于函数组件和类组件，采用不同的更新方法
+ * @param {*} newVirtualDom 
+ * @param {*} oldVirtualDom 
+ * @param {*} oldDom 
+ */
+
+function updateReactCompoent(newVirtualDom, oldVirtualDom, oldDom) {
+  if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isFunctionComponent)(newVirtualDom)) {
+    console.log('这里是更新函数组件');
+  } else {
+    if (!(0,_utils__WEBPACK_IMPORTED_MODULE_3__.compareComponentProps)(newVirtualDom.props, oldVirtualDom.component.props)) {
+      (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_4__["default"])(newVirtualDom, oldVirtualDom, oldDom);
     }
   }
 }
@@ -476,6 +501,7 @@ function updateVdom(newVdom, container, oldDom) {
  * @param {HTMLElement} oldDom 
  * @param {*} newVdom 
  */
+
 
 function updateDeleteChildren(oldDom, newVdom) {
   var oldChildren = oldDom.childNodes;
@@ -489,6 +515,37 @@ function updateDeleteChildren(oldDom, newVdom) {
       oldChildren[i].remove();
     }
   }
+}
+
+/***/ }),
+
+/***/ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js":
+/*!********************************************************************!*\
+  !*** ./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ updateClassComponent)
+/* harmony export */ });
+/* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
+
+/**
+ * 更新类组件
+ * @param {*} newVdom 
+ * @param {*} oldVdom 
+ * @param {HTMLElement} oldDom 
+ */
+
+function updateClassComponent(newVdom, oldVdom, oldDom) {
+  var fn = newVdom.type;
+  var component = new fn(newVdom.props); // 执行函数，得到需要渲染的virtualDom对象
+
+  var elementVirtualDom = component.render(); // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+
+  elementVirtualDom.component = component;
+  (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, oldDom.parentNode, oldDom);
 }
 
 /***/ }),
@@ -524,6 +581,7 @@ function updateTextNodeElement(vDom, oldDom) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "compareComponentProps": () => (/* binding */ compareComponentProps),
 /* harmony export */   "isComponent": () => (/* binding */ isComponent),
 /* harmony export */   "isFunctionComponent": () => (/* binding */ isFunctionComponent)
 /* harmony export */ });
@@ -543,6 +601,21 @@ function isFunctionComponent(vDom) {
   var type = vDom.type;
   return type && isComponent(vDom) && !(type.prototype && type.prototype.render);
 }
+/**
+ * 比较新旧组件的props是否不一致，如果不一致，那么就需要更新组件，重新渲染了
+ * @return {boolean} true代表没变化，false代表需要更新
+ */
+
+function compareComponentProps(newProps, oldProps) {
+  // 定义一个变量，用来计数变化的次数
+  var flag = 0;
+  Object.keys(newProps).forEach(function (key) {
+    if (newProps[key] !== oldProps[key]) {
+      flag++;
+    }
+  });
+  return flag === 0;
+}
 
 /***/ }),
 
@@ -556,15 +629,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Component)
 /* harmony export */ });
+/* harmony import */ var _ZzqReactDom_diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../ZzqReactDom/diff */ "./react15/src/ZzqReactDom/diff.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
+
 /**
  * 所有类组件都需要继承的父类，这个父类里面包含了 props参数，setState方法，控制子组件更新等等一些列重要的方法
  */
+
 var Component = /*#__PURE__*/function () {
   function Component(props) {
     _classCallCheck(this, Component);
@@ -580,8 +656,9 @@ var Component = /*#__PURE__*/function () {
 
       var newVirtualDom = this.render(); // 找到类组件对应的真实dom
 
-      var oldDom = this.getDom();
-      console.log(oldDom);
+      var oldDom = this.getDom(); // 实现对比更新
+
+      (0,_ZzqReactDom_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(newVirtualDom, oldDom.parentNode, oldDom);
     }
   }, {
     key: "setDom",
@@ -3553,7 +3630,6 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 
 
-console.log(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"]);
 var dom = _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
   className: "container"
 }, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
@@ -3634,24 +3710,43 @@ var Header = function Header(props) {
   }));
 };
 
-var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component2) {
-  _inherits(OpenMessage, _ZzqReact$Component2);
+var OpenMessageChildren = /*#__PURE__*/function (_ZzqReact$Component2) {
+  _inherits(OpenMessageChildren, _ZzqReact$Component2);
 
-  var _super2 = _createSuper(OpenMessage);
+  var _super2 = _createSuper(OpenMessageChildren);
+
+  function OpenMessageChildren(props) {
+    _classCallCheck(this, OpenMessageChildren);
+
+    return _super2.call(this, props);
+  }
+
+  _createClass(OpenMessageChildren, [{
+    key: "render",
+    value: function render() {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.props.title);
+    }
+  }]);
+
+  return OpenMessageChildren;
+}(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].Component);
+
+var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
+  _inherits(OpenMessage, _ZzqReact$Component3);
+
+  var _super3 = _createSuper(OpenMessage);
 
   function OpenMessage(props) {
     var _this;
 
     _classCallCheck(this, OpenMessage);
 
-    _this = _super2.call(this, props);
+    _this = _super3.call(this, props);
 
     _defineProperty(_assertThisInitialized(_this), "handlerUpdateTitle", function () {
       _this.setState({
         title: '这是一个变化的标题了'
       });
-
-      console.log(_this.state);
     });
 
     _this.state = {
@@ -3663,7 +3758,9 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component2) {
   _createClass(OpenMessage, [{
     key: "render",
     value: function render() {
-      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessageChildren, {
+        title: this.state.title
+      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
         onClick: this.handlerUpdateTitle
       }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"));
     }
