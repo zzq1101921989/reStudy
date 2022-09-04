@@ -2,22 +2,41 @@ import diff from "../diff";
 
 /**
  * 更新类组件
- * @param {*} newVdom 
- * @param {*} oldVdom 
- * @param {HTMLElement} oldDom 
+ * @param {*} componentNewVdom 新的组件对应的新virtualDom
+ * @param {*} oldComponent 旧的实例对象
+ * @param {HTMLElement} container 容器
+ * @param {HTMLElement} oldDom 旧的真实dom
  */
-export default function updateClassComponent(newVdom, oldVdom, oldDom) {
+export default function updateClassComponent(
+  componentNewVdom,
+  oldComponent,
+  container,
+  oldDom
+) {
+  /* 拿出新的props */
+  const newProps = componentNewVdom.props;
+  
+  /* 执行生命周期 */
+  oldComponent.componentWillReceiveProps(newProps);
 
-    const fn = newVdom.type
+  if (oldComponent.shouldComponentUpdate(componentNewVdom.props)) {
+    let prevProps = oldComponent.props;
 
-    const component = new fn(newVdom.props);
+    /* 执行生命周期 */
+    oldComponent.componentWillUpdate(newProps);
 
-    // 执行函数，得到需要渲染的virtualDom对象
-    const elementVirtualDom = component.render();
+    /* 更新props */
+    oldComponent.updateProps(newProps);
 
-    // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
-    elementVirtualDom.component = component
+    /* 拿到更新props过后新的virtualDom */
+    const newElementVirtualDom = oldComponent.render();
 
-    diff(elementVirtualDom, oldDom.parentNode, oldDom)
+    /* 不要忘记更新对应的实例对象 */
+    newElementVirtualDom.component = oldComponent;
 
+    /* 对比更新 */
+    diff(newElementVirtualDom, container, oldDom);
+
+    oldComponent.componentDidUpdate(prevProps);
+  }
 }

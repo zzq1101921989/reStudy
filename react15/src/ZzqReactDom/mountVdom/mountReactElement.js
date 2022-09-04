@@ -16,4 +16,7 @@ export default function mountReactElement (vDom, container) {
 
     // 添加并且挂载节点
     container.appendChild(newElement)
+
+    // 执行生命周期函数
+    if (vDom.component?.componentDidMount) vDom.component.componentDidMount()
 }

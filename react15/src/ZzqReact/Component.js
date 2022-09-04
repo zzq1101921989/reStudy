@@ -23,4 +23,26 @@ export default class Component {
   getDom() {
     return this._dom
   }
+  updateProps(props) {
+    this.props = props
+  }
+
+  /* ---------------------------- 生命周期方法 ---------------------------- */
+
+  /* 组件挂载完成之后 */
+  componentDidMount() {}
+
+  /* 组件更新后，拿到的最新的props，但是此时组件还没有完全的更新完毕 */
+  componentWillReceiveProps(props) {}
+
+  /* 组件即将更新了 */
+  componentWillUpdate(nextProps) {}
+
+  /* 组件更新完毕之后，执行的方法 */
+  componentDidUpdate() {}
+
+  /* 是否更新组件？ */
+  shouldComponentUpdate(nextProps, nextState) {
+    return true
+  }
 }

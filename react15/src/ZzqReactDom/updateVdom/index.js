@@ -1,7 +1,8 @@
 import diff from "../diff";
 import createDomElement from "../mountVdom/createDomElement";
+import mountComponent from "../mountVdom/mountComponent";
 import updateNodeElementAttr from "../updateNodeElementAttr";
-import { compareComponentProps, isComponent, isFunctionComponent } from "../utils";
+import { compareComponentProps, isComponent, isFunctionComponent, isSameComponent } from "../utils";
 import updateClassComponent from "./updateClassComponent";
 import updateTextNodeElement from "./updateTextNodeElement";
 
@@ -16,11 +17,14 @@ export default function updateVdom(newVdom, container, oldDom) {
   // 取出旧的virtualDom对比的时候需要用到
   const oldVirtualDom = oldDom._virtualDom;
 
+  // 取出 oldVirtualDom 内部对应的实例对象
+  const oldComponent = oldVirtualDom?.component
+
   if (oldVirtualDom && newVdom) {
 
     /* 组件类型更新 */
     if (isComponent(newVdom)) {
-      updateReactCompoent(newVdom, oldVirtualDom, oldDom)
+      diffComponent(newVdom, oldComponent, oldVirtualDom, oldDom, container)
     }  
     /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
     else if (newVdom.type === oldVirtualDom.type) {
@@ -54,18 +58,29 @@ export default function updateVdom(newVdom, container, oldDom) {
 }
 
 /**
- * 组件更新处理方法，对于函数组件和类组件，采用不同的更新方法
- * @param {*} newVirtualDom 
- * @param {*} oldVirtualDom 
- * @param {*} oldDom 
+ * 组件更新处理方法
+ * 1、对于更新前后都是同一个组件的时候，需要对比内部的子组件是否相同
+ * 2、对于更新前后完全不同一个组件的情况，直接用新组件内容去替代旧组件的内容即可
+ * @param {*} newVirtualDom 新的virtualDom
+ * @param {*} oldComponent 旧的组件实例对象，如果新旧实例组件都是同一个的话，那么就没必要重新new一个实例对象出来了，直接用旧的即可
+ * @param {*} oldVirtualDom 就的virtualDom
+ * @param {HTMLElement} oldDom 旧的真实dom对象
+ * @param {HTMLElement} container 外层容器
  */
-function updateReactCompoent(newVirtualDom, oldVirtualDom, oldDom) {
-  if (isFunctionComponent(newVirtualDom)) {
-    console.log('这里是更新函数组件');
-  } else {
-    if (!compareComponentProps(newVirtualDom.props, oldVirtualDom.component.props)) {
-      updateClassComponent(newVirtualDom, oldVirtualDom, oldDom)
+function diffComponent(newVirtualDom, oldComponent, oldVirtualDom, oldDom, container) {
+  /* 判断当前组件是否是同一个组件更新，如果是则进行对比，如果不是的话，那么直接替换就好了 */
+  if (isSameComponent(newVirtualDom, oldComponent)) {
+    if (isFunctionComponent(newVirtualDom)) {
+      console.log('这里是更新函数组件');
+    } else {
+      if (!compareComponentProps(newVirtualDom.props, oldComponent.props)) {
+        // updateClassComponent(newVirtualDom, oldVirtualDom, oldDom)
+        updateClassComponent(newVirtualDom, oldComponent, container, oldDom)
+      }
     }
+  } else {
+    oldDom.remove();
+    mountComponent(newVirtualDom, container)
   }
 }
 

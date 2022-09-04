@@ -12,7 +12,7 @@ export default function mountClassComponent (vDom, container) {
     // 执行函数，得到需要渲染的virtualDom对象
     const elementVirtualDom = component.render();
 
-    // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+    // 把类组件实例对象绑定在虚拟对象上，方便后续收集真实的dom对象和利用旧的实例对象render方法去更新组件
     elementVirtualDom.component = component
 
     if (elementVirtualDom) {

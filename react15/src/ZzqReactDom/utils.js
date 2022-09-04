@@ -29,3 +29,11 @@ export function compareComponentProps(newProps, oldProps) {
     })
     return flag === 0
 }
+
+/**
+ * 查看是否是同一个组件对象，根据新virtual对象的type属性和旧类组件的constructor进行对比即可（目前该函数的功能之实现了类组件的判断）
+ * 
+ */
+export function isSameComponent(newVirtualDom, oldComponent) {
+    return newVirtualDom.type === oldComponent.constructor
+}

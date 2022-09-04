@@ -97,6 +97,19 @@ class OpenMessage extends ZzqReact.Component {
       title: '这是一个变化的标题了'
     })
   }
+
+  componentWillReceiveProps(newProps) {
+    console.log('这是新的props', newProps);
+  }
+
+  componentDidMount() {
+    console.log('组件挂载完成');
+  }
+
+  componentDidUpdate() {
+    console.log('更新完成');
+  }
+
   render() {
     return <div>
       {this.props.name}
@@ -108,6 +121,15 @@ class OpenMessage extends ZzqReact.Component {
   }
 }
 
+class NewOpenMessage extends ZzqReact.Component {
+  constructor(props) {
+    super(props)
+  }
+  render() {
+    return <div>这是一个新的组件哦</div>
+  }
+}
+
 
 // ZzqReactDom.render(dom, document.querySelector('#root'))
 // ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
@@ -116,7 +138,19 @@ class OpenMessage extends ZzqReact.Component {
 // setTimeout(() => {
 //   ZzqReactDom.render(dom2, document.querySelector('#root'))
 // }, [2000])
+
 ZzqReactDom.render(
   <OpenMessage name='zzq' age='18' />, document.querySelector('#root')
 )
+
+// setTimeout(() => {
+//   ZzqReactDom.render(
+//     <NewOpenMessage />, document.querySelector('#root')
+//   )
+// }, 2000)
+setTimeout(() => {
+  ZzqReactDom.render(
+    <OpenMessage name='变化的zzq' age='24' />, document.querySelector('#root')
+  )
+}, 2000)
 

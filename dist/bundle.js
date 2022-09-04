@@ -189,7 +189,7 @@ function mountClassComponent(vDom, container) {
   var fn = vDom.type;
   var component = new fn(vDom.props); // 执行函数，得到需要渲染的virtualDom对象
 
-  var elementVirtualDom = component.render(); // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+  var elementVirtualDom = component.render(); // 把类组件实例对象绑定在虚拟对象上，方便后续收集真实的dom对象和利用旧的实例对象render方法去更新组件
 
   elementVirtualDom.component = component;
 
@@ -253,6 +253,8 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountReactElement(vDom, container) {
+  var _vDom$component;
+
   var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 这种情况就代表这个虚拟dom的产生实际上就是通过 类组件 的render得来的，因为在 mountClassComponent 方法中注入了这个属性
 
   if (vDom.component) {
@@ -260,7 +262,9 @@ function mountReactElement(vDom, container) {
   } // 添加并且挂载节点
 
 
-  container.appendChild(newElement);
+  container.appendChild(newElement); // 执行生命周期函数
+
+  if ((_vDom$component = vDom.component) !== null && _vDom$component !== void 0 && _vDom$component.componentDidMount) vDom.component.componentDidMount();
 }
 
 /***/ }),
@@ -427,10 +431,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
 /* harmony import */ var _mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mountVdom/createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
-/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
-/* harmony import */ var _updateClassComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./updateClassComponent */ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js");
-/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+/* harmony import */ var _mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../mountVdom/mountComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _updateClassComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./updateClassComponent */ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js");
+/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
+
 
 
 
@@ -446,20 +452,22 @@ __webpack_require__.r(__webpack_exports__);
 
 function updateVdom(newVdom, container, oldDom) {
   // 取出旧的virtualDom对比的时候需要用到
-  var oldVirtualDom = oldDom._virtualDom;
+  var oldVirtualDom = oldDom._virtualDom; // 取出 oldVirtualDom 内部对应的实例对象
+
+  var oldComponent = oldVirtualDom === null || oldVirtualDom === void 0 ? void 0 : oldVirtualDom.component;
 
   if (oldVirtualDom && newVdom) {
     /* 组件类型更新 */
-    if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isComponent)(newVdom)) {
-      updateReactCompoent(newVdom, oldVirtualDom, oldDom);
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isComponent)(newVdom)) {
+      diffComponent(newVdom, oldComponent, oldVirtualDom, oldDom, container);
     }
     /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
     else if (newVdom.type === oldVirtualDom.type) {
       if (newVdom.type === "text" && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
-        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__["default"])(newVdom, oldDom);
+        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_6__["default"])(newVdom, oldDom);
       } // 加一个判断是否更新属性，因为文本没有属性的
       else {
-        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
+        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_3__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
       }
       /* 子节点也是对比的 */
 
@@ -481,19 +489,30 @@ function updateVdom(newVdom, container, oldDom) {
   }
 }
 /**
- * 组件更新处理方法，对于函数组件和类组件，采用不同的更新方法
- * @param {*} newVirtualDom 
- * @param {*} oldVirtualDom 
- * @param {*} oldDom 
+ * 组件更新处理方法
+ * 1、对于更新前后都是同一个组件的时候，需要对比内部的子组件是否相同
+ * 2、对于更新前后完全不同一个组件的情况，直接用新组件内容去替代旧组件的内容即可
+ * @param {*} newVirtualDom 新的virtualDom
+ * @param {*} oldComponent 旧的组件实例对象，如果新旧实例组件都是同一个的话，那么就没必要重新new一个实例对象出来了，直接用旧的即可
+ * @param {*} oldVirtualDom 就的virtualDom
+ * @param {HTMLElement} oldDom 旧的真实dom对象
+ * @param {HTMLElement} container 外层容器
  */
 
-function updateReactCompoent(newVirtualDom, oldVirtualDom, oldDom) {
-  if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isFunctionComponent)(newVirtualDom)) {
-    console.log('这里是更新函数组件');
-  } else {
-    if (!(0,_utils__WEBPACK_IMPORTED_MODULE_3__.compareComponentProps)(newVirtualDom.props, oldVirtualDom.component.props)) {
-      (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_4__["default"])(newVirtualDom, oldVirtualDom, oldDom);
+function diffComponent(newVirtualDom, oldComponent, oldVirtualDom, oldDom, container) {
+  /* 判断当前组件是否是同一个组件更新，如果是则进行对比，如果不是的话，那么直接替换就好了 */
+  if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isSameComponent)(newVirtualDom, oldComponent)) {
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isFunctionComponent)(newVirtualDom)) {
+      console.log('这里是更新函数组件');
+    } else {
+      if (!(0,_utils__WEBPACK_IMPORTED_MODULE_4__.compareComponentProps)(newVirtualDom.props, oldComponent.props)) {
+        // updateClassComponent(newVirtualDom, oldVirtualDom, oldDom)
+        (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_5__["default"])(newVirtualDom, oldComponent, container, oldDom);
+      }
     }
+  } else {
+    oldDom.remove();
+    (0,_mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_2__["default"])(newVirtualDom, container);
   }
 }
 /**
@@ -533,19 +552,38 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * 更新类组件
- * @param {*} newVdom 
- * @param {*} oldVdom 
- * @param {HTMLElement} oldDom 
+ * @param {*} componentNewVdom 新的组件对应的新virtualDom
+ * @param {*} oldComponent 旧的实例对象
+ * @param {HTMLElement} container 容器
+ * @param {HTMLElement} oldDom 旧的真实dom
  */
 
-function updateClassComponent(newVdom, oldVdom, oldDom) {
-  var fn = newVdom.type;
-  var component = new fn(newVdom.props); // 执行函数，得到需要渲染的virtualDom对象
+function updateClassComponent(componentNewVdom, oldComponent, container, oldDom) {
+  /* 拿出新的props */
+  var newProps = componentNewVdom.props;
+  /* 执行生命周期 */
 
-  var elementVirtualDom = component.render(); // 把类组件实例绑定在虚拟对象上，方便后续收集真实的dom对象
+  oldComponent.componentWillReceiveProps(newProps);
 
-  elementVirtualDom.component = component;
-  (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, oldDom.parentNode, oldDom);
+  if (oldComponent.shouldComponentUpdate(componentNewVdom.props)) {
+    var prevProps = oldComponent.props;
+    /* 执行生命周期 */
+
+    oldComponent.componentWillUpdate(newProps);
+    /* 更新props */
+
+    oldComponent.updateProps(newProps);
+    /* 拿到更新props过后新的virtualDom */
+
+    var newElementVirtualDom = oldComponent.render();
+    /* 不要忘记更新对应的实例对象 */
+
+    newElementVirtualDom.component = oldComponent;
+    /* 对比更新 */
+
+    (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(newElementVirtualDom, container, oldDom);
+    oldComponent.componentDidUpdate(prevProps);
+  }
 }
 
 /***/ }),
@@ -583,7 +621,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "compareComponentProps": () => (/* binding */ compareComponentProps),
 /* harmony export */   "isComponent": () => (/* binding */ isComponent),
-/* harmony export */   "isFunctionComponent": () => (/* binding */ isFunctionComponent)
+/* harmony export */   "isFunctionComponent": () => (/* binding */ isFunctionComponent),
+/* harmony export */   "isSameComponent": () => (/* binding */ isSameComponent)
 /* harmony export */ });
 /**
  * 判断当前的virtualDom是属于普通的元素节点，还是组件
@@ -615,6 +654,14 @@ function compareComponentProps(newProps, oldProps) {
     }
   });
   return flag === 0;
+}
+/**
+ * 查看是否是同一个组件对象，根据新virtual对象的type属性和旧类组件的constructor进行对比即可（目前该函数的功能之实现了类组件的判断）
+ * 
+ */
+
+function isSameComponent(newVirtualDom, oldComponent) {
+  return newVirtualDom.type === oldComponent.constructor;
 }
 
 /***/ }),
@@ -669,6 +716,40 @@ var Component = /*#__PURE__*/function () {
     key: "getDom",
     value: function getDom() {
       return this._dom;
+    }
+  }, {
+    key: "updateProps",
+    value: function updateProps(props) {
+      this.props = props;
+    }
+    /* ---------------------------- 生命周期方法 ---------------------------- */
+
+    /* 组件挂载完成之后 */
+
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {}
+    /* 组件更新后，拿到的最新的props，但是此时组件还没有完全的更新完毕 */
+
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(props) {}
+    /* 组件即将更新了 */
+
+  }, {
+    key: "componentWillUpdate",
+    value: function componentWillUpdate(nextProps) {}
+    /* 组件更新完毕之后，执行的方法 */
+
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {}
+    /* 是否更新组件？ */
+
+  }, {
+    key: "shouldComponentUpdate",
+    value: function shouldComponentUpdate(nextProps, nextState) {
+      return true;
     }
   }]);
 
@@ -3756,6 +3837,21 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   }
 
   _createClass(OpenMessage, [{
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(newProps) {
+      console.log('这是新的props', newProps);
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      console.log('组件挂载完成');
+    }
+  }, {
+    key: "componentDidUpdate",
+    value: function componentDidUpdate() {
+      console.log('更新完成');
+    }
+  }, {
     key: "render",
     value: function render() {
       return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessageChildren, {
@@ -3767,6 +3863,27 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   }]);
 
   return OpenMessage;
+}(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].Component);
+
+var NewOpenMessage = /*#__PURE__*/function (_ZzqReact$Component4) {
+  _inherits(NewOpenMessage, _ZzqReact$Component4);
+
+  var _super4 = _createSuper(NewOpenMessage);
+
+  function NewOpenMessage(props) {
+    _classCallCheck(this, NewOpenMessage);
+
+    return _super4.call(this, props);
+  }
+
+  _createClass(NewOpenMessage, [{
+    key: "render",
+    value: function render() {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u8FD9\u662F\u4E00\u4E2A\u65B0\u7684\u7EC4\u4EF6\u54E6");
+    }
+  }]);
+
+  return NewOpenMessage;
 }(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].Component); // ZzqReactDom.render(dom, document.querySelector('#root'))
 // ZzqReactDom.render(<Header title='这是参数的头部信息' />, document.querySelector('#root'))
 // ZzqReactDom.render(dom, document.querySelector('#root'))
@@ -3778,7 +3895,18 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
 _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessage, {
   name: "zzq",
   age: "18"
-}), document.querySelector('#root'));
+}), document.querySelector('#root')); // setTimeout(() => {
+//   ZzqReactDom.render(
+//     <NewOpenMessage />, document.querySelector('#root')
+//   )
+// }, 2000)
+
+setTimeout(function () {
+  _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessage, {
+    name: "\u53D8\u5316\u7684zzq",
+    age: "24"
+  }), document.querySelector('#root'));
+}, 2000);
 })();
 
 /******/ })()
