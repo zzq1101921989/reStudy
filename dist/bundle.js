@@ -181,8 +181,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /**
  * 类组件
- * @param {*} vDom 
- * @param {*} container 
+ * @param {*} vDom
+ * @param {*} container
  */
 
 function mountClassComponent(vDom, container) {
@@ -196,8 +196,13 @@ function mountClassComponent(vDom, container) {
   if (elementVirtualDom) {
     (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
   } else {
-    throw new Error(fn.name + '没有返回需要渲染的元素，请好好检查一下');
-  }
+    throw new Error(fn.name + "没有返回需要渲染的元素，请好好检查一下");
+  } // 如果有ref属性，则去获取类组件的实例
+
+
+  if (vDom.props && vDom.props.ref) vDom.props.ref(component); // 执行生命周期函数
+
+  if (component !== null && component !== void 0 && component.componentDidMount) component.componentDidMount();
 }
 
 /***/ }),
@@ -253,8 +258,6 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountReactElement(vDom, container) {
-  var _vDom$component;
-
   var newElement = (0,_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(vDom); // 这种情况就代表这个虚拟dom的产生实际上就是通过 类组件 的render得来的，因为在 mountClassComponent 方法中注入了这个属性
 
   if (vDom.component) {
@@ -262,9 +265,8 @@ function mountReactElement(vDom, container) {
   } // 添加并且挂载节点
 
 
-  container.appendChild(newElement); // 执行生命周期函数
-
-  if ((_vDom$component = vDom.component) !== null && _vDom$component !== void 0 && _vDom$component.componentDidMount) vDom.component.componentDidMount();
+  container.appendChild(newElement);
+  if (vDom.props && vDom.props.ref) vDom.props.ref(newElement);
 }
 
 /***/ }),
@@ -336,7 +338,7 @@ function updateNodeElementAttr(element, newProps) {
       } // 行内样式表
       else if (isBindStyle(propName)) {
         handlerCssStyle(element, newPropValue);
-      } else if (propName !== "children") {
+      } else if (propName !== "children" && propName !== "ref") {
         element.setAttribute(propName, newPropValue);
       }
     }
@@ -506,7 +508,6 @@ function diffComponent(newVirtualDom, oldComponent, oldVirtualDom, oldDom, conta
       console.log('这里是更新函数组件');
     } else {
       if (!(0,_utils__WEBPACK_IMPORTED_MODULE_4__.compareComponentProps)(newVirtualDom.props, oldComponent.props)) {
-        // updateClassComponent(newVirtualDom, oldVirtualDom, oldDom)
         (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_5__["default"])(newVirtualDom, oldComponent, container, oldDom);
       }
     }
@@ -3797,15 +3798,24 @@ var OpenMessageChildren = /*#__PURE__*/function (_ZzqReact$Component2) {
   var _super2 = _createSuper(OpenMessageChildren);
 
   function OpenMessageChildren(props) {
+    var _this;
+
     _classCallCheck(this, OpenMessageChildren);
 
-    return _super2.call(this, props);
+    _this = _super2.call(this, props);
+
+    _defineProperty(_assertThisInitialized(_this), "handlerClick", function () {});
+
+    _this.state = {
+      name: 'zzq'
+    };
+    return _this;
   }
 
   _createClass(OpenMessageChildren, [{
     key: "render",
     value: function render() {
-      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.props.title);
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.props.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u540D\u5B57\u662F: ", this.state.name));
     }
   }]);
 
@@ -3818,22 +3828,27 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   var _super3 = _createSuper(OpenMessage);
 
   function OpenMessage(props) {
-    var _this;
+    var _this2;
 
     _classCallCheck(this, OpenMessage);
 
-    _this = _super3.call(this, props);
+    _this2 = _super3.call(this, props);
 
-    _defineProperty(_assertThisInitialized(_this), "handlerUpdateTitle", function () {
-      _this.setState({
+    _defineProperty(_assertThisInitialized(_this2), "handlerUpdateTitle", function () {
+      console.log(_this2.buttonDom);
+      console.log(_this2.instance);
+
+      _this2.setState({
         title: '这是一个变化的标题了'
       });
     });
 
-    _this.state = {
+    _this2.state = {
       title: '这是一个默认的标题哦'
     };
-    return _this;
+    _this2.buttonDom = null;
+    _this2.instance = null;
+    return _this2;
   }
 
   _createClass(OpenMessage, [{
@@ -3854,9 +3869,17 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   }, {
     key: "render",
     value: function render() {
+      var _this3 = this;
+
       return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessageChildren, {
+        ref: function ref(instance) {
+          return _this3.instance = instance;
+        },
         title: this.state.title
       }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        ref: function ref(dom) {
+          return _this3.buttonDom = dom;
+        },
         onClick: this.handlerUpdateTitle
       }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"));
     }

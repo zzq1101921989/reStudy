@@ -34,7 +34,7 @@ export default function updateNodeElementAttr(
       // 行内样式表
       else if (isBindStyle(propName)) {
         handlerCssStyle(element, newPropValue);
-      } else if (propName !== "children") {
+      } else if (propName !== "children" && propName !== "ref") {
         element.setAttribute(propName, newPropValue);
       }
     }

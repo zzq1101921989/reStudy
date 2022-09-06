@@ -79,9 +79,18 @@ const Header = (props) => {
 class OpenMessageChildren extends ZzqReact.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      name: 'zzq'
+    }
+  }
+  handlerClick = () => {
+    
   }
   render() {
-    return <div>标题内容是: {this.props.title}</div>
+    return <div>
+      <div>标题内容是: {this.props.title}</div>
+      <div>名字是: {this.state.name}</div>
+    </div>
   } 
 }
 
@@ -91,8 +100,12 @@ class OpenMessage extends ZzqReact.Component {
     this.state = {
       title: '这是一个默认的标题哦'
     }
+    this.buttonDom = null;
+    this.instance = null;
   }
   handlerUpdateTitle = () => {
+    console.log(this.buttonDom);
+    console.log(this.instance);
     this.setState({
       title: '这是一个变化的标题了'
     })
@@ -115,8 +128,8 @@ class OpenMessage extends ZzqReact.Component {
       {this.props.name}
       {this.props.age}
       <div>标题内容是: {this.state.title}</div>
-      <OpenMessageChildren title={this.state.title} />
-      <button onClick={this.handlerUpdateTitle}>更新标题内容</button>
+      <OpenMessageChildren ref={(instance) => this.instance = instance} title={this.state.title} />
+      <button ref={(dom) => this.buttonDom = dom} onClick={this.handlerUpdateTitle}>更新标题内容</button>
     </div>
   }
 }

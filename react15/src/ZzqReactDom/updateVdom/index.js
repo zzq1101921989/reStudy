@@ -74,7 +74,6 @@ function diffComponent(newVirtualDom, oldComponent, oldVirtualDom, oldDom, conta
       console.log('这里是更新函数组件');
     } else {
       if (!compareComponentProps(newVirtualDom.props, oldComponent.props)) {
-        // updateClassComponent(newVirtualDom, oldVirtualDom, oldDom)
         updateClassComponent(newVirtualDom, oldComponent, container, oldDom)
       }
     }
