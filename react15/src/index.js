@@ -98,7 +98,13 @@ class OpenMessage extends ZzqReact.Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: '这是一个默认的标题哦'
+      title: '这是一个默认的标题哦',
+      list: [
+        '这是第一条数据',
+        '这是第二条数据',
+        '这是第三条数据',
+        '这是第四条数据',
+      ]
     }
     this.buttonDom = null;
     this.instance = null;
@@ -107,7 +113,18 @@ class OpenMessage extends ZzqReact.Component {
     console.log(this.buttonDom);
     console.log(this.instance);
     this.setState({
-      title: '这是一个变化的标题了'
+      title: '这是一个变化的标题了',
+    })
+  }
+
+  handlerDataOrder = () => {
+
+    const endData = this.state.list.slice(-1)[0]
+    this.state.list.pop();
+    this.state.list.unshift(endData)
+
+    this.setState({
+      list: [...this.state.list]
     })
   }
 
@@ -130,6 +147,12 @@ class OpenMessage extends ZzqReact.Component {
       <div>标题内容是: {this.state.title}</div>
       <OpenMessageChildren ref={(instance) => this.instance = instance} title={this.state.title} />
       <button ref={(dom) => this.buttonDom = dom} onClick={this.handlerUpdateTitle}>更新标题内容</button>
+      <br/>
+      <br/>
+      {
+        this.state.list.map(item => <div key={item}>{item}</div>)
+      }
+      <button onClick={this.handlerDataOrder}>改变数据的顺序</button>
     </div>
   }
 }
@@ -161,9 +184,9 @@ ZzqReactDom.render(
 //     <NewOpenMessage />, document.querySelector('#root')
 //   )
 // }, 2000)
-setTimeout(() => {
-  ZzqReactDom.render(
-    <OpenMessage name='变化的zzq' age='24' />, document.querySelector('#root')
-  )
-}, 2000)
+// setTimeout(() => {
+//   ZzqReactDom.render(
+//     <OpenMessage name='变化的zzq' age='24' />, document.querySelector('#root')
+//   )
+// }, 2000)
 

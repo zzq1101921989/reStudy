@@ -431,14 +431,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ updateVdom)
 /* harmony export */ });
-/* harmony import */ var _diff__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../diff */ "./react15/src/ZzqReactDom/diff.js");
-/* harmony import */ var _mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mountVdom/createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
-/* harmony import */ var _mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../mountVdom/mountComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
-/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
-/* harmony import */ var _updateClassComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./updateClassComponent */ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js");
-/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
-
+/* harmony import */ var _mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../mountVdom/createDomElement */ "./react15/src/ZzqReactDom/mountVdom/createDomElement.js");
+/* harmony import */ var _mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../mountVdom/mountComponent */ "./react15/src/ZzqReactDom/mountVdom/mountComponent/index.js");
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../updateNodeElementAttr */ "./react15/src/ZzqReactDom/updateNodeElementAttr.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./react15/src/ZzqReactDom/utils.js");
+/* harmony import */ var _updateClassComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./updateClassComponent */ "./react15/src/ZzqReactDom/updateVdom/updateClassComponent.js");
+/* harmony import */ var _updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./updateTextNodeElement */ "./react15/src/ZzqReactDom/updateVdom/updateTextNodeElement.js");
 
 
 
@@ -460,32 +458,25 @@ function updateVdom(newVdom, container, oldDom) {
 
   if (oldVirtualDom && newVdom) {
     /* 组件类型更新 */
-    if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isComponent)(newVdom)) {
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isComponent)(newVdom)) {
       diffComponent(newVdom, oldComponent, oldVirtualDom, oldDom, container);
-    }
-    /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
-    else if (newVdom.type === oldVirtualDom.type) {
+    } else if (newVdom.type === oldVirtualDom.type) {
+      /* 证明类型是一样的，就不需要重新创建元素，更新元素即可 */
       if (newVdom.type === "text" && newVdom.props.textContent !== oldVirtualDom.props.textContent) {
-        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_6__["default"])(newVdom, oldDom);
+        (0,_updateTextNodeElement__WEBPACK_IMPORTED_MODULE_5__["default"])(newVdom, oldDom);
       } // 加一个判断是否更新属性，因为文本没有属性的
       else {
-        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_3__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
+        (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_2__["default"])(oldDom, newVdom.props, oldVirtualDom.props);
       }
-      /* 子节点也是对比的 */
 
-
-      newVdom.props.children.forEach(function (child, index) {
-        // 子元素旧的dom元素
-        var childOldElement = oldDom.childNodes[index];
-        (0,_diff__WEBPACK_IMPORTED_MODULE_0__["default"])(child, childOldElement.parentNode, childOldElement);
-      });
+      diffChildren(newVdom, oldDom);
       /* 查看是否有子节点被删除 */
 
       updateDeleteChildren(oldDom, newVdom);
-    }
+    } else if (
     /* 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了 */
-    else if (newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
-      var newElement = (0,_mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"])(newVdom);
+    newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
+      var newElement = (0,_mountVdom_createDomElement__WEBPACK_IMPORTED_MODULE_0__["default"])(newVdom);
       oldDom.parentNode.replaceChild(newElement, oldDom);
     }
   }
@@ -503,23 +494,75 @@ function updateVdom(newVdom, container, oldDom) {
 
 function diffComponent(newVirtualDom, oldComponent, oldVirtualDom, oldDom, container) {
   /* 判断当前组件是否是同一个组件更新，如果是则进行对比，如果不是的话，那么直接替换就好了 */
-  if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isSameComponent)(newVirtualDom, oldComponent)) {
-    if ((0,_utils__WEBPACK_IMPORTED_MODULE_4__.isFunctionComponent)(newVirtualDom)) {
-      console.log('这里是更新函数组件');
+  if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isSameComponent)(newVirtualDom, oldComponent)) {
+    if ((0,_utils__WEBPACK_IMPORTED_MODULE_3__.isFunctionComponent)(newVirtualDom)) {
+      console.log("这里是更新函数组件");
     } else {
-      if (!(0,_utils__WEBPACK_IMPORTED_MODULE_4__.compareComponentProps)(newVirtualDom.props, oldComponent.props)) {
-        (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_5__["default"])(newVirtualDom, oldComponent, container, oldDom);
+      if (!(0,_utils__WEBPACK_IMPORTED_MODULE_3__.compareComponentProps)(newVirtualDom.props, oldComponent.props)) {
+        (0,_updateClassComponent__WEBPACK_IMPORTED_MODULE_4__["default"])(newVirtualDom, oldComponent, container, oldDom);
       }
     }
   } else {
     oldDom.remove();
-    (0,_mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_2__["default"])(newVirtualDom, container);
+    (0,_mountVdom_mountComponent__WEBPACK_IMPORTED_MODULE_1__["default"])(newVirtualDom, container);
+  }
+}
+/**
+ * 对比子节点，当有key和不存在key的时候对比的逻辑也是不一样的
+ * @param {*} newVdom 新的虚拟dom节点
+ * @param {HTMLElement} oldDom 旧的真实dom元素
+ */
+
+
+function diffChildren(newVdom, oldDom) {
+  // 通过对象的方式记录一下，旧的元素的key对应的真实dom元素
+  var keyElementMap = {}; // 收集一下旧dom元素中带有key的元素
+
+  for (var i = 0; i < oldDom.childNodes.length; i++) {
+    var element = oldDom.childNodes[i];
+
+    if (element.nodeType === 1) {
+      var key = element.getAttribute("key");
+      if (key && element) keyElementMap[key] = element;
+    }
+  } // 是否一个key都没有给
+
+
+  var hasNokey = Object.keys(keyElementMap).length === 0; // 没有key，那就按照索引在进行对比了
+
+  if (hasNokey) {
+    newVdom.props.children.forEach(function (child, index) {
+      var childOldElement = oldDom.childNodes[index];
+      updateVdom(child, childOldElement.parentNode, childOldElement);
+    });
+  } // 有的话，就按照key来试试
+  else {
+    newVdom.props.children.forEach(function (child, index) {
+      // 看一下新的virtualDom有没有元素
+      var key = child.props.key;
+      var domElement = keyElementMap[key];
+      var childOldElement = oldDom.childNodes[index];
+
+      if (key) {
+        if (domElement) {
+          if (childOldElement && childOldElement !== domElement) {
+            oldDom.insertBefore(domElement, childOldElement);
+          } else {
+            updateVdom(child, childOldElement.parentNode, childOldElement);
+          }
+        } else {
+          updateVdom(child, childOldElement.parentNode, childOldElement);
+        }
+      } else {
+        updateVdom(child, childOldElement.parentNode, childOldElement);
+      }
+    });
   }
 }
 /**
  * 对比新旧节点，查看是否有需要被删除的节点
- * @param {HTMLElement} oldDom 
- * @param {*} newVdom 
+ * @param {HTMLElement} oldDom
+ * @param {*} newVdom
  */
 
 
@@ -3687,6 +3730,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ZzqReactDom */ "./react15/src/ZzqReactDom/index.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3843,8 +3898,21 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_this2), "handlerDataOrder", function () {
+      var endData = _this2.state.list.slice(-1)[0];
+
+      _this2.state.list.pop();
+
+      _this2.state.list.unshift(endData);
+
+      _this2.setState({
+        list: _toConsumableArray(_this2.state.list)
+      });
+    });
+
     _this2.state = {
-      title: '这是一个默认的标题哦'
+      title: '这是一个默认的标题哦',
+      list: ['这是第一条数据', '这是第二条数据', '这是第三条数据', '这是第四条数据']
     };
     _this2.buttonDom = null;
     _this2.instance = null;
@@ -3881,7 +3949,13 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
           return _this3.buttonDom = dom;
         },
         onClick: this.handlerUpdateTitle
-      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"));
+      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), this.state.list.map(function (item) {
+        return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+          key: item
+        }, item);
+      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        onClick: this.handlerDataOrder
+      }, "\u6539\u53D8\u6570\u636E\u7684\u987A\u5E8F"));
     }
   }]);
 
@@ -3923,13 +3997,11 @@ _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_I
 //     <NewOpenMessage />, document.querySelector('#root')
 //   )
 // }, 2000)
-
-setTimeout(function () {
-  _ZzqReactDom__WEBPACK_IMPORTED_MODULE_2__["default"].render(_ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessage, {
-    name: "\u53D8\u5316\u7684zzq",
-    age: "24"
-  }), document.querySelector('#root'));
-}, 2000);
+// setTimeout(() => {
+//   ZzqReactDom.render(
+//     <OpenMessage name='变化的zzq' age='24' />, document.querySelector('#root')
+//   )
+// }, 2000)
 })();
 
 /******/ })()
