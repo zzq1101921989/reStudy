@@ -97,7 +97,6 @@ function isBindStyle(key) {
  * @return {string} 返回的是 width: 100px;height: 100px 类似这种css文本
  */
 function handlerCssStyle(element, styleValue) {
-  let cssText = "";
   if (styleValue instanceof Object) {
     Object.keys(styleValue).map((propName) => {
       const value = styleValue[propName];
@@ -106,5 +105,4 @@ function handlerCssStyle(element, styleValue) {
   } else {
     throw new Error("暂时只支持传入对象类型的style属性");
   }
-  return cssText;
 }

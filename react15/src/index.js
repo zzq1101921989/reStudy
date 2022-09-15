@@ -117,14 +117,22 @@ class OpenMessage extends ZzqReact.Component {
     })
   }
 
+  /* 调换数据的位置 */
   handlerDataOrder = () => {
-
     const endData = this.state.list.slice(-1)[0]
     this.state.list.pop();
     this.state.list.unshift(endData)
-
     this.setState({
       list: [...this.state.list]
+    })
+  }
+
+  /* 删除元素 */
+  handlerDeleteData = () => {
+    // 去掉最后一个
+    const newData = this.state.list.filter((item, index) => index !== this.state.list.length - 1)
+    this.setState({
+      list: [...newData]
     })
   }
 
@@ -142,17 +150,19 @@ class OpenMessage extends ZzqReact.Component {
 
   render() {
     return <div>
-      {this.props.name}
+      {/* {this.props.name}
       {this.props.age}
       <div>标题内容是: {this.state.title}</div>
       <OpenMessageChildren ref={(instance) => this.instance = instance} title={this.state.title} />
       <button ref={(dom) => this.buttonDom = dom} onClick={this.handlerUpdateTitle}>更新标题内容</button>
       <br/>
-      <br/>
+      <br/> */}
       {
         this.state.list.map(item => <div key={item}>{item}</div>)
+        // this.state.list.map(item => <div>{item}</div>)
       }
-      <button onClick={this.handlerDataOrder}>改变数据的顺序</button>
+      {/* <button onClick={this.handlerDataOrder}>改变数据的顺序</button> */}
+      <button onClick={this.handlerDeleteData}>删除最后一个元素</button>
     </div>
   }
 }

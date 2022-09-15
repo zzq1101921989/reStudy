@@ -45,4 +45,7 @@ export default class Component {
   shouldComponentUpdate(nextProps, nextState) {
     return true
   }
+
+  /* 组件卸载 */
+  componentWillUnmount() {}
 }

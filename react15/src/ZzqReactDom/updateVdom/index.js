@@ -17,6 +17,7 @@ import updateTextNodeElement from "./updateTextNodeElement";
  * @param {HTMLElement} oldDom 旧dom，用于后续的diff对比更新节点
  */
 export default function updateVdom(newVdom, container, oldDom) {
+
   // 取出旧的virtualDom对比的时候需要用到
   const oldVirtualDom = oldDom._virtualDom;
 
@@ -41,9 +42,6 @@ export default function updateVdom(newVdom, container, oldDom) {
       }
 
       diffChildren(newVdom, oldDom);
-
-      /* 查看是否有子节点被删除 */
-      updateDeleteChildren(oldDom, newVdom);
     } else if (
       /* 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了 */
       newVdom &&
@@ -116,45 +114,109 @@ function diffChildren(newVdom, oldDom) {
       updateVdom(child, childOldElement.parentNode, childOldElement);
     });
   }
-  // 有的话，就按照key来试试
+  // 这里就只处理一种情况，就是元素是否只是调换了位置
   else {
     newVdom.props.children.forEach((child, index) => {
-      // 看一下新的virtualDom有没有元素
       const key = child.props.key;
       const domElement = keyElementMap[key];
       const childOldElement = oldDom.childNodes[index];
-      if (key) {
-        if (domElement) {
-          if (childOldElement && childOldElement !== domElement) {
-            oldDom.insertBefore(domElement, childOldElement);
-          } else {
-            updateVdom(child, childOldElement.parentNode, childOldElement);
-          }
-        } else {
-          updateVdom(child, childOldElement.parentNode, childOldElement);
+      if (key && domElement) {
+         if (childOldElement && childOldElement !== domElement) {
+          oldDom.insertBefore(domElement, childOldElement);
         }
-      } else {
-        updateVdom(child, childOldElement.parentNode, childOldElement);
       }
     });
   }
+
+  /* 查看是否有子节点被删除 */
+  updateDeleteChildren(hasNokey, oldDom, newVdom);
+}
+
+/**
+ * 删除节点的同时，还需要当前的节点是不是文本节点，如果是，则可以直接删除
+ * 如果不是还需要查看是否是组件类型，如果是组件类型的话，需要调用组件的卸载生命周期，并且取消事件的注册，ref属性清空
+ * @param {HTMLElement} node 真实的dom节点
+ */
+function unmountNode(node) {
+  const oldVirtualDom = node._virtualDom;
+
+  /* 1、如果是文本节点那么就直接删除就好了，不需要考虑其他的东西 */
+  if (oldVirtualDom.type === 'text') {
+    node.remove();
+    return
+  }
+
+  const component = oldVirtualDom.component
+
+  /* 2、如果有实例化的类组件绑定着？那么就证明是类组件生成的dom元素，就需要调用卸载生命周期的方法 */
+  if (component) {
+    if (component.componentWillUnmount) component.componentWillUnmount()
+  }
+
+  if (oldVirtualDom.props) {
+
+    /* 3、如果组件上绑定了ref属性，那么也需要一并清空了 */
+    if (oldVirtualDom.props.ref) oldVirtualDom.props.ref(null)
+
+    /* 4、如果绑定了事件，那么也不要忘记进行清理 */
+    Object.keys(oldVirtualDom.props).forEach(item => {
+      if (item.slice(0, 2) === 'on') {
+        const evnetName = item.toLocaleLowerCase().slice(2);
+        const eventHandler = oldVirtualDom.props[item];
+        node.removeEventListener(evnetName, eventHandler)
+      }
+    })
+  }
+
+  /* 5、如果还存在子节点？那么也需要重复这些操作 */
+  if (node.childNodes.length > 0) {
+    for (let i = 0; i < node.childNodes.length; i++) {
+      unmountNode(node.childNodes[i])
+      i--;
+    }
+  }
+
+  /* 6、最后一步就是删除元素了 */
+  node.remove();
 }
 
 /**
  * 对比新旧节点，查看是否有需要被删除的节点
- * @param {HTMLElement} oldDom
+ * @param {boolean} hasNokey 是否采用key的方式进行对比
+ * @param {HTMLElement} oldDomContainer
  * @param {*} newVdom
  */
-function updateDeleteChildren(oldDom, newVdom) {
-  const oldChildren = oldDom.childNodes;
-  const oldChildrenLen = oldChildren.length;
+function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
+  const oldChildren = oldDomContainer.childNodes;
   const newChildren = newVdom.props.children;
   const newChildrenLen = newChildren.length;
 
-  /* 证明在新节点中是存在被删除的元素的 */
-  if (oldChildrenLen > newChildrenLen) {
-    for (let i = oldChildrenLen - 1; i > newChildrenLen - 1; i--) {
-      oldChildren[i].remove();
+  if (hasNokey) {
+    /* 证明在新节点中是存在被删除的元素的 */
+    if (oldChildren.length > newChildrenLen) {
+      for (let i = oldChildren.length - 1; i > newChildrenLen - 1; i--) {
+        unmountNode(oldChildren[i]);
+      }
+    }
+  } else {
+    /* 从旧的dom中拿出key */
+    for (let i = 0; i < oldChildren.length; i++) {
+      const oldDom = oldChildren[i]
+      const oldKey = oldDom._virtualDom.props.key;
+      let found = false;
+      for (let y = 0; y < newChildrenLen; y++) {
+        const newDom = newChildren[y]
+        const newKey = newDom.props.key;
+        if ((oldKey && oldKey === newKey) || (!oldKey && oldDom._virtualDom.type === newChildren[y].type) ) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        console.log('执行了吧', oldDom);
+        unmountNode(oldDom)
+        i--;
+      }
     }
   }
 }

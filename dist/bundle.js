@@ -405,8 +405,6 @@ function isBindStyle(key) {
 
 
 function handlerCssStyle(element, styleValue) {
-  var cssText = "";
-
   if (styleValue instanceof Object) {
     Object.keys(styleValue).map(function (propName) {
       var value = styleValue[propName];
@@ -415,8 +413,6 @@ function handlerCssStyle(element, styleValue) {
   } else {
     throw new Error("暂时只支持传入对象类型的style属性");
   }
-
-  return cssText;
 }
 
 /***/ }),
@@ -470,9 +466,6 @@ function updateVdom(newVdom, container, oldDom) {
       }
 
       diffChildren(newVdom, oldDom);
-      /* 查看是否有子节点被删除 */
-
-      updateDeleteChildren(oldDom, newVdom);
     } else if (
     /* 如果新旧节点类型都不一样了，那就没有对比的必要了，直接用replaceChiild替换就可以了 */
     newVdom && newVdom.type !== oldVirtualDom.type && typeof newVdom.type !== "function") {
@@ -535,47 +528,117 @@ function diffChildren(newVdom, oldDom) {
       var childOldElement = oldDom.childNodes[index];
       updateVdom(child, childOldElement.parentNode, childOldElement);
     });
-  } // 有的话，就按照key来试试
+  } // 这里就只处理一种情况，就是元素是否只是调换了位置
   else {
     newVdom.props.children.forEach(function (child, index) {
-      // 看一下新的virtualDom有没有元素
       var key = child.props.key;
       var domElement = keyElementMap[key];
       var childOldElement = oldDom.childNodes[index];
 
-      if (key) {
-        if (domElement) {
-          if (childOldElement && childOldElement !== domElement) {
-            oldDom.insertBefore(domElement, childOldElement);
-          } else {
-            updateVdom(child, childOldElement.parentNode, childOldElement);
-          }
-        } else {
-          updateVdom(child, childOldElement.parentNode, childOldElement);
+      if (key && domElement) {
+        if (childOldElement && childOldElement !== domElement) {
+          oldDom.insertBefore(domElement, childOldElement);
         }
-      } else {
-        updateVdom(child, childOldElement.parentNode, childOldElement);
       }
     });
   }
+  /* 查看是否有子节点被删除 */
+
+
+  updateDeleteChildren(hasNokey, oldDom, newVdom);
+}
+/**
+ * 删除节点的同时，还需要当前的节点是不是文本节点，如果是，则可以直接删除
+ * 如果不是还需要查看是否是组件类型，如果是组件类型的话，需要调用组件的卸载生命周期，并且取消事件的注册，ref属性清空
+ * @param {HTMLElement} node 真实的dom节点
+ */
+
+
+function unmountNode(node) {
+  var oldVirtualDom = node._virtualDom;
+  /* 1、如果是文本节点那么就直接删除就好了，不需要考虑其他的东西 */
+
+  if (oldVirtualDom.type === 'text') {
+    node.remove();
+    return;
+  }
+
+  var component = oldVirtualDom.component;
+  /* 2、如果有实例化的类组件绑定着？那么就证明是类组件生成的dom元素，就需要调用卸载生命周期的方法 */
+
+  if (component) {
+    if (component.componentWillUnmount) component.componentWillUnmount();
+  }
+
+  if (oldVirtualDom.props) {
+    /* 3、如果组件上绑定了ref属性，那么也需要一并清空了 */
+    if (oldVirtualDom.props.ref) oldVirtualDom.props.ref(null);
+    /* 4、如果绑定了事件，那么也不要忘记进行清理 */
+
+    Object.keys(oldVirtualDom.props).forEach(function (item) {
+      if (item.slice(0, 2) === 'on') {
+        var evnetName = item.toLocaleLowerCase().slice(2);
+        var eventHandler = oldVirtualDom.props[item];
+        node.removeEventListener(evnetName, eventHandler);
+      }
+    });
+  }
+  /* 5、如果还存在子节点？那么也需要重复这些操作 */
+
+
+  if (node.childNodes.length > 0) {
+    for (var i = 0; i < node.childNodes.length; i++) {
+      unmountNode(node.childNodes[i]);
+      i--;
+    }
+  }
+  /* 6、最后一步就是删除元素了 */
+
+
+  node.remove();
 }
 /**
  * 对比新旧节点，查看是否有需要被删除的节点
- * @param {HTMLElement} oldDom
+ * @param {boolean} hasNokey 是否采用key的方式进行对比
+ * @param {HTMLElement} oldDomContainer
  * @param {*} newVdom
  */
 
 
-function updateDeleteChildren(oldDom, newVdom) {
-  var oldChildren = oldDom.childNodes;
-  var oldChildrenLen = oldChildren.length;
+function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
+  var oldChildren = oldDomContainer.childNodes;
   var newChildren = newVdom.props.children;
   var newChildrenLen = newChildren.length;
-  /* 证明在新节点中是存在被删除的元素的 */
 
-  if (oldChildrenLen > newChildrenLen) {
-    for (var i = oldChildrenLen - 1; i > newChildrenLen - 1; i--) {
-      oldChildren[i].remove();
+  if (hasNokey) {
+    /* 证明在新节点中是存在被删除的元素的 */
+    if (oldChildren.length > newChildrenLen) {
+      for (var i = oldChildren.length - 1; i > newChildrenLen - 1; i--) {
+        unmountNode(oldChildren[i]);
+      }
+    }
+  } else {
+    /* 从旧的dom中拿出key */
+    for (var _i = 0; _i < oldChildren.length; _i++) {
+      var oldDom = oldChildren[_i];
+      var oldKey = oldDom._virtualDom.props.key;
+      var found = false;
+
+      for (var y = 0; y < newChildrenLen; y++) {
+        var newDom = newChildren[y];
+        var newKey = newDom.props.key;
+
+        if (oldKey && oldKey === newKey || !oldKey && oldDom._virtualDom.type === newChildren[y].type) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        console.log('执行了吧', oldDom);
+        unmountNode(oldDom);
+        _i--;
+      }
     }
   }
 }
@@ -795,6 +858,11 @@ var Component = /*#__PURE__*/function () {
     value: function shouldComponentUpdate(nextProps, nextState) {
       return true;
     }
+    /* 组件卸载 */
+
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {}
   }]);
 
   return Component;
@@ -3910,6 +3978,17 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_this2), "handlerDeleteData", function () {
+      // 去掉最后一个
+      var newData = _this2.state.list.filter(function (item, index) {
+        return index !== _this2.state.list.length - 1;
+      });
+
+      _this2.setState({
+        list: _toConsumableArray(newData)
+      });
+    });
+
     _this2.state = {
       title: '这是一个默认的标题哦',
       list: ['这是第一条数据', '这是第二条数据', '这是第三条数据', '这是第四条数据']
@@ -3937,25 +4016,14 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   }, {
     key: "render",
     value: function render() {
-      var _this3 = this;
-
-      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessageChildren, {
-        ref: function ref(instance) {
-          return _this3.instance = instance;
-        },
-        title: this.state.title
-      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
-        ref: function ref(dom) {
-          return _this3.buttonDom = dom;
-        },
-        onClick: this.handlerUpdateTitle
-      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), this.state.list.map(function (item) {
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.state.list.map(function (item) {
         return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
           key: item
         }, item);
-      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
-        onClick: this.handlerDataOrder
-      }, "\u6539\u53D8\u6570\u636E\u7684\u987A\u5E8F"));
+      }) // this.state.list.map(item => <div>{item}</div>)
+      , _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        onClick: this.handlerDeleteData
+      }, "\u5220\u9664\u6700\u540E\u4E00\u4E2A\u5143\u7D20"));
     }
   }]);
 
