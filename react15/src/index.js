@@ -103,7 +103,6 @@ class OpenMessage extends ZzqReact.Component {
         '这是第一条数据',
         '这是第二条数据',
         '这是第三条数据',
-        '这是第四条数据',
       ]
     }
     this.buttonDom = null;
@@ -150,18 +149,18 @@ class OpenMessage extends ZzqReact.Component {
 
   render() {
     return <div>
-      {/* {this.props.name}
+      {this.props.name}
       {this.props.age}
       <div>标题内容是: {this.state.title}</div>
       <OpenMessageChildren ref={(instance) => this.instance = instance} title={this.state.title} />
       <button ref={(dom) => this.buttonDom = dom} onClick={this.handlerUpdateTitle}>更新标题内容</button>
       <br/>
-      <br/> */}
+      <br/>
       {
         this.state.list.map(item => <div key={item}>{item}</div>)
         // this.state.list.map(item => <div>{item}</div>)
       }
-      {/* <button onClick={this.handlerDataOrder}>改变数据的顺序</button> */}
+      <button onClick={this.handlerDataOrder}>改变数据的顺序</button>
       <button onClick={this.handlerDeleteData}>删除最后一个元素</button>
     </div>
   }

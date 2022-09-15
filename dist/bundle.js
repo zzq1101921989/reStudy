@@ -531,14 +531,20 @@ function diffChildren(newVdom, oldDom) {
   } // 这里就只处理一种情况，就是元素是否只是调换了位置
   else {
     newVdom.props.children.forEach(function (child, index) {
-      var key = child.props.key;
-      var domElement = keyElementMap[key];
+      // 从最新的virtualDom取出key属性（如果存在的情况下）
+      var key = child.props.key; // 尝试通过这个key，看看是否可以在旧dom中对象中发现，如果能发现，可以保证的是节点并没有删除
+
+      var domElement = keyElementMap[key]; // 即使存在，但是也不能保持位置没有调换，所以还需要根据新vDom的索引去取旧dom元素的子元素。从而对比是否相等，不相等证明位置改变过
+
       var childOldElement = oldDom.childNodes[index];
 
       if (key && domElement) {
+        // 位置改变过
         if (childOldElement && childOldElement !== domElement) {
           oldDom.insertBefore(domElement, childOldElement);
         }
+      } else if (!key && newVdom.props.children.length === oldDom.childNodes.length) {
+        updateVdom(child, childOldElement.parentNode, childOldElement);
       }
     });
   }
@@ -558,7 +564,7 @@ function unmountNode(node) {
   var oldVirtualDom = node._virtualDom;
   /* 1、如果是文本节点那么就直接删除就好了，不需要考虑其他的东西 */
 
-  if (oldVirtualDom.type === 'text') {
+  if (oldVirtualDom.type === "text") {
     node.remove();
     return;
   }
@@ -576,7 +582,7 @@ function unmountNode(node) {
     /* 4、如果绑定了事件，那么也不要忘记进行清理 */
 
     Object.keys(oldVirtualDom.props).forEach(function (item) {
-      if (item.slice(0, 2) === 'on') {
+      if (item.slice(0, 2) === "on") {
         var evnetName = item.toLocaleLowerCase().slice(2);
         var eventHandler = oldVirtualDom.props[item];
         node.removeEventListener(evnetName, eventHandler);
@@ -635,7 +641,7 @@ function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
       }
 
       if (!found) {
-        console.log('执行了吧', oldDom);
+        console.log("执行了吧", oldDom);
         unmountNode(oldDom);
         _i--;
       }
@@ -3991,7 +3997,7 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
 
     _this2.state = {
       title: '这是一个默认的标题哦',
-      list: ['这是第一条数据', '这是第二条数据', '这是第三条数据', '这是第四条数据']
+      list: ['这是第一条数据', '这是第二条数据', '这是第三条数据']
     };
     _this2.buttonDom = null;
     _this2.instance = null;
@@ -4016,12 +4022,26 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
   }, {
     key: "render",
     value: function render() {
-      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.state.list.map(function (item) {
+      var _this3 = this;
+
+      return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, this.props.name, this.props.age, _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u6807\u9898\u5185\u5BB9\u662F: ", this.state.title), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(OpenMessageChildren, {
+        ref: function ref(instance) {
+          return _this3.instance = instance;
+        },
+        title: this.state.title
+      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        ref: function ref(dom) {
+          return _this3.buttonDom = dom;
+        },
+        onClick: this.handlerUpdateTitle
+      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), this.state.list.map(function (item) {
         return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
           key: item
         }, item);
       }) // this.state.list.map(item => <div>{item}</div>)
       , _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        onClick: this.handlerDataOrder
+      }, "\u6539\u53D8\u6570\u636E\u7684\u987A\u5E8F"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
         onClick: this.handlerDeleteData
       }, "\u5220\u9664\u6700\u540E\u4E00\u4E2A\u5143\u7D20"));
     }
