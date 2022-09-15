@@ -7,6 +7,8 @@ import mountVdom from "..";
  */
 export default function mountClassComponent(vDom, container) {
   const fn = vDom.type;
+  // 循环组件的时候也是可以接受key的，这个key就默认放在第一个dom元素上就好了
+  const key = vDom.props.key
   const component = new fn(vDom.props);
 
   // 执行函数，得到需要渲染的virtualDom对象
@@ -14,6 +16,8 @@ export default function mountClassComponent(vDom, container) {
 
   // 把类组件实例对象绑定在虚拟对象上，方便后续收集真实的dom对象和利用旧的实例对象render方法去更新组件
   elementVirtualDom.component = component;
+  // 保存key属性
+  if (key) elementVirtualDom.props.key = key
 
   if (elementVirtualDom) {
     mountVdom(elementVirtualDom, container);

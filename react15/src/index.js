@@ -157,8 +157,9 @@ class OpenMessage extends ZzqReact.Component {
       <br/>
       <br/>
       {
-        this.state.list.map(item => <div key={item}>{item}</div>)
+        // this.state.list.map(item => <div key={item}>{item}</div>)
         // this.state.list.map(item => <div>{item}</div>)
+        this.state.list.map(item => <NewOpenMessage key={item} />)
       }
       <button onClick={this.handlerDataOrder}>改变数据的顺序</button>
       <button onClick={this.handlerDeleteData}>删除最后一个元素</button>
@@ -169,6 +170,9 @@ class OpenMessage extends ZzqReact.Component {
 class NewOpenMessage extends ZzqReact.Component {
   constructor(props) {
     super(props)
+  }
+  componentWillUnmount() {
+    console.log('卸载了！！');
   }
   render() {
     return <div>这是一个新的组件哦</div>

@@ -186,12 +186,16 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function mountClassComponent(vDom, container) {
-  var fn = vDom.type;
+  var fn = vDom.type; // 循环组件的时候也是可以接受key的，这个key就默认放在第一个dom元素上就好了
+
+  var key = vDom.props.key;
   var component = new fn(vDom.props); // 执行函数，得到需要渲染的virtualDom对象
 
   var elementVirtualDom = component.render(); // 把类组件实例对象绑定在虚拟对象上，方便后续收集真实的dom对象和利用旧的实例对象render方法去更新组件
 
-  elementVirtualDom.component = component;
+  elementVirtualDom.component = component; // 保存key属性
+
+  if (key) elementVirtualDom.props.key = key;
 
   if (elementVirtualDom) {
     (0,___WEBPACK_IMPORTED_MODULE_0__["default"])(elementVirtualDom, container);
@@ -619,6 +623,8 @@ function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
   if (hasNokey) {
     /* 证明在新节点中是存在被删除的元素的 */
     if (oldChildren.length > newChildrenLen) {
+      console.log(oldChildren, 'oldChildren');
+
       for (var i = oldChildren.length - 1; i > newChildrenLen - 1; i--) {
         unmountNode(oldChildren[i]);
       }
@@ -641,7 +647,6 @@ function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
       }
 
       if (!found) {
-        console.log("执行了吧", oldDom);
         unmountNode(oldDom);
         _i--;
       }
@@ -4034,12 +4039,13 @@ var OpenMessage = /*#__PURE__*/function (_ZzqReact$Component3) {
           return _this3.buttonDom = dom;
         },
         onClick: this.handlerUpdateTitle
-      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), this.state.list.map(function (item) {
-        return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", {
+      }, "\u66F4\u65B0\u6807\u9898\u5185\u5BB9"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("br", null), // this.state.list.map(item => <div key={item}>{item}</div>)
+      // this.state.list.map(item => <div>{item}</div>)
+      this.state.list.map(function (item) {
+        return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement(NewOpenMessage, {
           key: item
-        }, item);
-      }) // this.state.list.map(item => <div>{item}</div>)
-      , _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
+        });
+      }), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
         onClick: this.handlerDataOrder
       }, "\u6539\u53D8\u6570\u636E\u7684\u987A\u5E8F"), _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("button", {
         onClick: this.handlerDeleteData
@@ -4062,6 +4068,11 @@ var NewOpenMessage = /*#__PURE__*/function (_ZzqReact$Component4) {
   }
 
   _createClass(NewOpenMessage, [{
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      console.log('卸载了！！');
+    }
+  }, {
     key: "render",
     value: function render() {
       return _ZzqReact__WEBPACK_IMPORTED_MODULE_1__["default"].createElement("div", null, "\u8FD9\u662F\u4E00\u4E2A\u65B0\u7684\u7EC4\u4EF6\u54E6");

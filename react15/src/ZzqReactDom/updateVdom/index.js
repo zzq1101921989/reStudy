@@ -148,6 +148,7 @@ function diffChildren(newVdom, oldDom) {
  * @param {HTMLElement} node 真实的dom节点
  */
 function unmountNode(node) {
+
   const oldVirtualDom = node._virtualDom;
 
   /* 1、如果是文本节点那么就直接删除就好了，不需要考虑其他的东西 */
@@ -203,6 +204,7 @@ function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
   if (hasNokey) {
     /* 证明在新节点中是存在被删除的元素的 */
     if (oldChildren.length > newChildrenLen) {
+      console.log(oldChildren, 'oldChildren');
       for (let i = oldChildren.length - 1; i > newChildrenLen - 1; i--) {
         unmountNode(oldChildren[i]);
       }
@@ -225,7 +227,6 @@ function updateDeleteChildren(hasNokey, oldDomContainer, newVdom) {
         }
       }
       if (!found) {
-        console.log("执行了吧", oldDom);
         unmountNode(oldDom);
         i--;
       }
