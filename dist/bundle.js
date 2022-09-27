@@ -2,6 +2,38 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./react16/src/react-dom/index.js":
+/*!****************************************!*\
+  !*** ./react16/src/react-dom/index.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _render__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./render */ "./react16/src/react-dom/render.js");
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  render: _render__WEBPACK_IMPORTED_MODULE_0__["default"]
+});
+
+/***/ }),
+
+/***/ "./react16/src/react-dom/render.js":
+/*!*****************************************!*\
+  !*** ./react16/src/react-dom/render.js ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ render)
+/* harmony export */ });
+function render(virtualDom, container) {}
+
+/***/ }),
+
 /***/ "./react16/src/react/createElement.js":
 /*!********************************************!*\
   !*** ./react16/src/react/createElement.js ***!
@@ -131,9 +163,12 @@ var __webpack_exports__ = {};
   \******************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./react */ "./react16/src/react/index.js");
+/* harmony import */ var _react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react-dom */ "./react16/src/react-dom/index.js");
+
 
 var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u4E00\u4E2Ap\u6807\u7B7E"));
 console.log(jsx);
+(0,_react_dom__WEBPACK_IMPORTED_MODULE_1__.render)();
 })();
 
 /******/ })()
