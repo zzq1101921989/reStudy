@@ -1,10 +1,10 @@
 import React from './react';
-import { render } from './react-dom';
+import ReactDom from './react-dom';
 
 const jsx = <div>
     <p>这是一个p标签</p>
 </div>
 
-console.log(jsx);
+const root = document.querySelector('#root');
 
-render();
+ReactDom.render(jsx, root);

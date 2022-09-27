@@ -9,5 +9,3 @@ module.exports = {
         ]
     ]
 }
-
-console.log(process.env.REACT_Version, 'process.env');

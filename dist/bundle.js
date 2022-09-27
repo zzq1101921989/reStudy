@@ -30,7 +30,43 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ render)
 /* harmony export */ });
-function render(virtualDom, container) {}
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util */ "./react16/src/util/index.js");
+
+var taskQueue = new _util__WEBPACK_IMPORTED_MODULE_0__.CreateTaskQueue(); // 当前正在进行的任务
+
+var subTask = null;
+/**
+ * 挂载virtualDom，并且转换成Fiber
+ * @param {*} virtualDom 
+ * @param {*} container 
+ */
+
+function render(virtualDom, container) {
+  // 循环执行工作任务
+  function wordLoop(deadline) {
+    // 浏览器空余时间大于一毫秒的话，就可以进行工作了
+    if (deadline.timeRemaining() > 1) {}
+  } // 调度任务
+
+
+  function schedule(deadline) {
+    wordLoop(deadline);
+
+    if (subTask || !taskQueue.isEmpty()) {
+      requestIdleCallback(schedule);
+    }
+  } // 当一开始没有任务的时候
+
+
+  if (!taskQueue.queue.length) {
+    taskQueue.pushTask({
+      dom: container,
+      children: virtualDom
+    });
+  }
+
+  requestIdleCallback(schedule);
+}
 
 /***/ }),
 
@@ -96,6 +132,68 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   createElement: _createElement__WEBPACK_IMPORTED_MODULE_0__["default"]
 });
+
+/***/ }),
+
+/***/ "./react16/src/util/createTaskQueue.js":
+/*!*********************************************!*\
+  !*** ./react16/src/util/createTaskQueue.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ CreateTaskQueue)
+/* harmony export */ });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+var CreateTaskQueue = /*#__PURE__*/function () {
+  function CreateTaskQueue() {
+    _classCallCheck(this, CreateTaskQueue);
+
+    this.queue = [];
+  }
+
+  _createClass(CreateTaskQueue, [{
+    key: "pushTask",
+    value: function pushTask(task) {
+      this.queue.push(task);
+    }
+  }, {
+    key: "getTask",
+    value: function getTask() {
+      return this.queue.shift();
+    }
+  }, {
+    key: "isEmpty",
+    value: function isEmpty() {
+      return this.queue.length === 0;
+    }
+  }]);
+
+  return CreateTaskQueue;
+}();
+
+
+
+/***/ }),
+
+/***/ "./react16/src/util/index.js":
+/*!***********************************!*\
+  !*** ./react16/src/util/index.js ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */ });
+/* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
+
 
 /***/ })
 
@@ -167,8 +265,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u4E00\u4E2Ap\u6807\u7B7E"));
-console.log(jsx);
-(0,_react_dom__WEBPACK_IMPORTED_MODULE_1__.render)();
+var root = document.querySelector('#root');
+_react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render(jsx, root);
 })();
 
 /******/ })()
