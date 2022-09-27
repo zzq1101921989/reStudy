@@ -9,8 +9,10 @@
     "react": "^18.2.0"
   },
   "scripts": {
-    "start:React15": "npm-run-all -p dev:**",
+    "start:React15": "npm-run-all -p dev:react15 dev:server-complie dev:server",
+    "start:React16": "npm-run-all -p dev:react16 dev:server-complie dev:server",
     "dev:react15": "cross-env REACT_Version=15 webpack --config webpack.config.client.js --watch",
+    "dev:react16": "cross-env REACT_Version=16 webpack --config webpack.config.client.js --watch",
     "dev:server-complie": "webpack --config webpack.config.server.js --watch",
     "dev:server": "nodemon ./build/server.js"
   },
