@@ -31,10 +31,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ render)
 /* harmony export */ });
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util */ "./react16/src/util/index.js");
+/* harmony import */ var _util_tag__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/tag */ "./react16/src/util/tag.js");
+
 
 var taskQueue = new _util__WEBPACK_IMPORTED_MODULE_0__.CreateTaskQueue(); // 当前正在进行的任务
 
-var subTask = null;
+var subTask = null; // 是否构建完成
+
+var isComplete = false;
 /**
  * 挂载virtualDom，并且转换成Fiber
  * @param {*} virtualDom 
@@ -42,27 +46,109 @@ var subTask = null;
  */
 
 function render(virtualDom, container) {
-  // 循环执行工作任务
+  /**
+   * 构建最外层的fiber任务
+   */
+  function getFirstFiberTask() {
+    var fiber = {
+      props: {
+        children: virtualDom
+      },
+      stateNode: container,
+      tag: _util_tag__WEBPACK_IMPORTED_MODULE_1__.HOST_ROOT,
+      effect: [],
+      child: null
+    };
+    return fiber;
+  }
+  /**
+   * 构建父子fiber关系
+   * parentFiber 父fiber节点
+   * virtualChilds 子virtualDom节点对象
+   */
+
+
+  function reconciler(parentFiber, virtualChilds) {
+    /* 防止出现对象的情况，所以统一转换成数组 */
+    var childrens = (0,_util__WEBPACK_IMPORTED_MODULE_0__.toArray)(virtualChilds);
+    /**
+     * 首先取出父fiber中的child属性，查看是否存在节点
+     * 在fiber数据结构中，子fiber节点只能存在一个，其他的子节点都是第一个子节点的兄弟节点
+     */
+
+    var parentChild = parentFiber.child;
+    /* 得出需要循环生成节点的次数 */
+
+    var index = childrens.length - 1;
+    /* 记得上一个生成的fiber节点，方便构建兄弟关系 */
+
+    var preChildFiber = null;
+
+    while (index >= 0) {
+      var currentVirtualDom = childrens[index]; // TODO: 未完待续，接下来继续完成父子fiber节点的构建
+
+      var newFiber = {
+        props: {
+          children: virtualDom
+        },
+        type: currentVirtualDom.type,
+        tag: _util_tag__WEBPACK_IMPORTED_MODULE_1__.HOST_COMPONENT,
+        "return": parentFiber,
+        effect: [],
+        effectTag: 'MOUNT',
+        stateNode: null,
+        child: null,
+        sibling: null
+      };
+      /* 构建父fiber的唯一一个子fiber节点 */
+
+      if (!parentChild) parentFiber.child = newFiber;
+
+      if (preChildFiber) {
+        preChildFiber.sibling = newFiber;
+      }
+
+      preChildFiber = newFiber;
+      index--;
+    }
+
+    console.log(parentFiber, 'parentFiber');
+  } // 执行单个工作任务
+
+
+  function executeTask(fiber) {
+    reconciler(fiber, fiber.props.children);
+  } // 循环执行工作任务
+
+
   function wordLoop(deadline) {
-    // 浏览器空余时间大于一毫秒的话，就可以进行工作了
-    if (deadline.timeRemaining() > 1) {}
+    // 准备执行任务了？发现没有任务
+    if (!subTask && !isComplete) {
+      // 构建最外层的RootFiber对象
+      subTask = getFirstFiberTask();
+    } // 浏览器空余时间大于一毫秒的话，就可以进行工作了
+
+
+    if (deadline.timeRemaining() > 1) {
+      while (subTask) {
+        subTask = executeTask(subTask);
+      }
+    }
   } // 调度任务
 
 
   function schedule(deadline) {
     wordLoop(deadline);
+    /**
+     * 当浏览器出现更高优先级的时候
+     * deadline的空余时间将会小于1，就会走到下面这行代码来
+     * 但是有高优先级的任务出现，并不代码渲染任务已经完成了，所以需要判断当前正在执行的任务和任务队列里面的任务是否完成
+     * 如果没有，则继续进行
+     */
 
     if (subTask || !taskQueue.isEmpty()) {
       requestIdleCallback(schedule);
     }
-  } // 当一开始没有任务的时候
-
-
-  if (!taskQueue.queue.length) {
-    taskQueue.pushTask({
-      dom: container,
-      children: virtualDom
-    });
   }
 
   requestIdleCallback(schedule);
@@ -190,10 +276,49 @@ var CreateTaskQueue = /*#__PURE__*/function () {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__["default"])
+/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "toArray": () => (/* reexport safe */ _toArray__WEBPACK_IMPORTED_MODULE_1__["default"])
 /* harmony export */ });
 /* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
+/* harmony import */ var _toArray__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./toArray */ "./react16/src/util/toArray.js");
 
+
+
+/***/ }),
+
+/***/ "./react16/src/util/tag.js":
+/*!*********************************!*\
+  !*** ./react16/src/util/tag.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CLASS_COMPONENT": () => (/* binding */ CLASS_COMPONENT),
+/* harmony export */   "FUNCTION_COMPONENT": () => (/* binding */ FUNCTION_COMPONENT),
+/* harmony export */   "HOST_COMPONENT": () => (/* binding */ HOST_COMPONENT),
+/* harmony export */   "HOST_ROOT": () => (/* binding */ HOST_ROOT)
+/* harmony export */ });
+var HOST_ROOT = 'hoot_root';
+var HOST_COMPONENT = 'hoot_component';
+var FUNCTION_COMPONENT = 'function_component';
+var CLASS_COMPONENT = 'class_component';
+
+/***/ }),
+
+/***/ "./react16/src/util/toArray.js":
+/*!*************************************!*\
+  !*** ./react16/src/util/toArray.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ toArray)
+/* harmony export */ });
+function toArray(arg) {
+  return Array.isArray(arg) ? arg : [arg];
+}
 
 /***/ })
 
@@ -264,7 +389,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react-dom */ "./react16/src/react-dom/index.js");
 
 
-var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u4E00\u4E2Ap\u6807\u7B7E"));
+var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u4E00\u4E2Ap\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E")));
 var root = document.querySelector('#root');
 _react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render(jsx, root);
 })();
