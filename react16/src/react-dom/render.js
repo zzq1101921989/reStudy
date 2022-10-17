@@ -1,5 +1,5 @@
-import { CreateTaskQueue, toArray } from '../util';
-import { HOST_COMPONENT, HOST_ROOT } from '../util/tag';
+import { createStateNode, CreateTaskQueue, toArray } from '../util';
+import getTag, { HOST_ROOT } from '../util/tag';
 
 const taskQueue = new CreateTaskQueue()
 
@@ -40,37 +40,34 @@ export default function render(virtualDom, container) {
         /* 防止出现对象的情况，所以统一转换成数组 */
         const childrens = toArray(virtualChilds)
 
-        /**
-         * 首先取出父fiber中的child属性，查看是否存在节点
-         * 在fiber数据结构中，子fiber节点只能存在一个，其他的子节点都是第一个子节点的兄弟节点
-         */
-        const parentChild = parentFiber.child;
+        console.log(parentFiber, 'parentFiber');
 
         /* 得出需要循环生成节点的次数 */
-        let index = childrens.length - 1;
+        let index = 0;
 
         /* 记得上一个生成的fiber节点，方便构建兄弟关系 */
         let preChildFiber = null;
 
-        while (index >= 0) {
+        while (index < childrens.length) {
 
+            /* 当前初始的virtualDom */
             const currentVirtualDom = childrens[index];
 
-            // TODO: 未完待续，接下来继续完成父子fiber节点的构建
             const newFiber = {
-                props: { children: virtualDom },
+                props: currentVirtualDom.props,
                 type: currentVirtualDom.type,
-                tag: HOST_COMPONENT,
+                tag: getTag(currentVirtualDom),
                 return: parentFiber,
                 effect: [],
                 effectTag: 'MOUNT',
-                stateNode: null,
                 child: null,
                 sibling: null,
             }
 
+            newFiber.stateNode = createStateNode(newFiber);
+
             /* 构建父fiber的唯一一个子fiber节点 */
-            if (!parentChild) parentFiber.child = newFiber
+            if (!parentFiber.child) parentFiber.child = newFiber
 
             if (preChildFiber) {
                 preChildFiber.sibling = newFiber
@@ -78,15 +75,21 @@ export default function render(virtualDom, container) {
 
             preChildFiber = newFiber
 
-            index--
+            index++
         }
-
-        console.log(parentFiber, 'parentFiber');
     }
 
     // 执行单个工作任务
     function executeTask(fiber) {
-        reconciler(fiber, fiber.props.children)
+        if (fiber.props.children) {
+            reconciler(fiber, fiber.props.children)
+        }
+        if (fiber.child) {
+            return fiber.child
+        }
+        if (fiber.sibling) {
+            return fiber.sibling
+        }
     }
 
     // 循环执行工作任务

@@ -71,53 +71,54 @@ function render(virtualDom, container) {
   function reconciler(parentFiber, virtualChilds) {
     /* 防止出现对象的情况，所以统一转换成数组 */
     var childrens = (0,_util__WEBPACK_IMPORTED_MODULE_0__.toArray)(virtualChilds);
-    /**
-     * 首先取出父fiber中的child属性，查看是否存在节点
-     * 在fiber数据结构中，子fiber节点只能存在一个，其他的子节点都是第一个子节点的兄弟节点
-     */
-
-    var parentChild = parentFiber.child;
+    console.log(parentFiber, 'parentFiber');
     /* 得出需要循环生成节点的次数 */
 
-    var index = childrens.length - 1;
+    var index = 0;
     /* 记得上一个生成的fiber节点，方便构建兄弟关系 */
 
     var preChildFiber = null;
 
-    while (index >= 0) {
-      var currentVirtualDom = childrens[index]; // TODO: 未完待续，接下来继续完成父子fiber节点的构建
-
+    while (index < childrens.length) {
+      /* 当前初始的virtualDom */
+      var currentVirtualDom = childrens[index];
       var newFiber = {
-        props: {
-          children: virtualDom
-        },
+        props: currentVirtualDom.props,
         type: currentVirtualDom.type,
-        tag: _util_tag__WEBPACK_IMPORTED_MODULE_1__.HOST_COMPONENT,
+        tag: (0,_util_tag__WEBPACK_IMPORTED_MODULE_1__["default"])(currentVirtualDom),
         "return": parentFiber,
         effect: [],
         effectTag: 'MOUNT',
-        stateNode: null,
         child: null,
         sibling: null
       };
+      newFiber.stateNode = (0,_util__WEBPACK_IMPORTED_MODULE_0__.createStateNode)(newFiber);
       /* 构建父fiber的唯一一个子fiber节点 */
 
-      if (!parentChild) parentFiber.child = newFiber;
+      if (!parentFiber.child) parentFiber.child = newFiber;
 
       if (preChildFiber) {
         preChildFiber.sibling = newFiber;
       }
 
       preChildFiber = newFiber;
-      index--;
+      index++;
     }
-
-    console.log(parentFiber, 'parentFiber');
   } // 执行单个工作任务
 
 
   function executeTask(fiber) {
-    reconciler(fiber, fiber.props.children);
+    if (fiber.props.children) {
+      reconciler(fiber, fiber.props.children);
+    }
+
+    if (fiber.child) {
+      return fiber.child;
+    }
+
+    if (fiber.sibling) {
+      return fiber.sibling;
+    }
   } // 循环执行工作任务
 
 
@@ -221,6 +222,38 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./react16/src/util/createStateNode.js":
+/*!*********************************************!*\
+  !*** ./react16/src/util/createStateNode.js ***!
+  \*********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createStateNode)
+/* harmony export */ });
+/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./updateNodeElementAttr */ "./react16/src/util/updateNodeElementAttr.js");
+
+/**
+ * 当fiber中的tag === host_component的时候就需要创建dom元素
+ * @param {*} fiber 
+ */
+
+function createStateNode(fiber) {
+  var newElement = null;
+
+  if (fiber.type === 'text') {
+    newElement = document.createTextNode(fiber.props.textContent);
+  } else {
+    newElement = document.createElement(fiber.type);
+    (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, fiber.props);
+  }
+
+  return newElement;
+}
+
+/***/ }),
+
 /***/ "./react16/src/util/createTaskQueue.js":
 /*!*********************************************!*\
   !*** ./react16/src/util/createTaskQueue.js ***!
@@ -276,11 +309,14 @@ var CreateTaskQueue = /*#__PURE__*/function () {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__["default"]),
-/* harmony export */   "toArray": () => (/* reexport safe */ _toArray__WEBPACK_IMPORTED_MODULE_1__["default"])
+/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_1__["default"]),
+/* harmony export */   "createStateNode": () => (/* reexport safe */ _createStateNode__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "toArray": () => (/* reexport safe */ _toArray__WEBPACK_IMPORTED_MODULE_2__["default"])
 /* harmony export */ });
-/* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
-/* harmony import */ var _toArray__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./toArray */ "./react16/src/util/toArray.js");
+/* harmony import */ var _createStateNode__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createStateNode */ "./react16/src/util/createStateNode.js");
+/* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
+/* harmony import */ var _toArray__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./toArray */ "./react16/src/util/toArray.js");
+
 
 
 
@@ -297,12 +333,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "CLASS_COMPONENT": () => (/* binding */ CLASS_COMPONENT),
 /* harmony export */   "FUNCTION_COMPONENT": () => (/* binding */ FUNCTION_COMPONENT),
 /* harmony export */   "HOST_COMPONENT": () => (/* binding */ HOST_COMPONENT),
-/* harmony export */   "HOST_ROOT": () => (/* binding */ HOST_ROOT)
+/* harmony export */   "HOST_ROOT": () => (/* binding */ HOST_ROOT),
+/* harmony export */   "default": () => (/* binding */ getTag)
 /* harmony export */ });
 var HOST_ROOT = 'hoot_root';
 var HOST_COMPONENT = 'hoot_component';
 var FUNCTION_COMPONENT = 'function_component';
 var CLASS_COMPONENT = 'class_component';
+/**
+ * 获取fiber中的tag属性
+ * @param {*} vDom virtualDom节点
+ */
+
+function getTag(vDom) {
+  switch (true) {
+    case typeof vDom.type == 'string':
+      return HOST_COMPONENT;
+  }
+}
 
 /***/ }),
 
@@ -318,6 +366,126 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 function toArray(arg) {
   return Array.isArray(arg) ? arg : [arg];
+}
+
+/***/ }),
+
+/***/ "./react16/src/util/updateNodeElementAttr.js":
+/*!***************************************************!*\
+  !*** ./react16/src/util/updateNodeElementAttr.js ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ updateNodeElementAttr)
+/* harmony export */ });
+/**
+ * 更新节点的属性，比如className、实践、style、type、value、data-xxx等
+ * @param {HTMLElement} element 需要绑定属性的html元素
+ * @param {*} newProps 新的属性对象，key代表属性名称，value代表属性的值
+ * @param {*} oldProps 旧的属性对象，用于和新的props作对比，从而找出差异的部分
+ */
+function updateNodeElementAttr(element, newProps) {
+  var oldProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  // 正常的进行遍历
+  Object.keys(newProps).forEach(function (propName) {
+    var newPropValue = newProps[propName];
+    var oldPropValue = oldProps[propName];
+
+    if (newPropValue !== oldPropValue) {
+      // 绑定事件
+      if (isBindEvent(propName)) {
+        var eventName = propName.toLowerCase().slice(2);
+        element.addEventListener(eventName, newPropValue);
+
+        if (oldPropValue) {
+          element.removeEventListener(eventName, oldPropValue);
+        }
+      } // 绑定表单的属性
+      else if (isBindInputHtmlAttr(propName)) {
+        element[propName] = newPropValue;
+      } // 是否绑定类名
+      else if (isBindClassName(propName)) {
+        element.setAttribute("class", newPropValue);
+      } // 行内样式表
+      else if (isBindStyle(propName)) {
+        handlerCssStyle(element, newPropValue);
+      } else if (propName !== "children" && propName !== "ref") {
+        element.setAttribute(propName, newPropValue);
+      }
+    }
+  }); // 既然有了oldProps，那就证明是更新的时候了，看看有没有需要删除的属性
+
+  Object.keys(oldProps).forEach(function (propName) {
+    var newPropValue = newProps[propName];
+    var oldPropValue = oldProps[propName];
+
+    if (!newPropValue) {
+      if (isBindEvent(propName)) {
+        element.removeEventListener(propName, oldPropValue);
+      } else {
+        element.removeAttribute(propName);
+      }
+    }
+  });
+}
+/**
+ * 当前的属性是否是事件属性
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+function isBindEvent(key) {
+  return key.slice(0, 2) === "on";
+}
+/**
+ * 当前的属性是否是表单相关的
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindInputHtmlAttr(key) {
+  return ["value", "checked"].includes(key);
+}
+/**
+ * 当前的属性是否是类名
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindClassName(key) {
+  return key === "className";
+}
+/**
+ * 当前的属性是否是行内样式
+ * @param {*} key 属性名称
+ * @return {boolean}
+ */
+
+
+function isBindStyle(key) {
+  return key === "style";
+}
+/**
+ * 处理style样式
+ * @param {HTMLElement} element
+ * @param {Object} styleValue
+ * @return {string} 返回的是 width: 100px;height: 100px 类似这种css文本
+ */
+
+
+function handlerCssStyle(element, styleValue) {
+  if (styleValue instanceof Object) {
+    Object.keys(styleValue).map(function (propName) {
+      var value = styleValue[propName];
+      element.style[propName] = value;
+    });
+  } else {
+    throw new Error("暂时只支持传入对象类型的style属性");
+  }
 }
 
 /***/ })
@@ -389,7 +557,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react-dom */ "./react16/src/react-dom/index.js");
 
 
-var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u4E00\u4E2Ap\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E")));
+var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("span", null, "\u8FD9\u662F\u4E00\u4E2Aspan\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E"));
 var root = document.querySelector('#root');
 _react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render(jsx, root);
 })();
