@@ -56,7 +56,7 @@ function render(virtualDom, container) {
       },
       stateNode: container,
       tag: _util_tag__WEBPACK_IMPORTED_MODULE_1__.HOST_ROOT,
-      effect: [],
+      effects: [],
       child: null
     };
     return fiber;
@@ -71,7 +71,6 @@ function render(virtualDom, container) {
   function reconciler(parentFiber, virtualChilds) {
     /* 防止出现对象的情况，所以统一转换成数组 */
     var childrens = (0,_util__WEBPACK_IMPORTED_MODULE_0__.toArray)(virtualChilds);
-    console.log(parentFiber, 'parentFiber');
     /* 得出需要循环生成节点的次数 */
 
     var index = 0;
@@ -87,7 +86,7 @@ function render(virtualDom, container) {
         type: currentVirtualDom.type,
         tag: (0,_util_tag__WEBPACK_IMPORTED_MODULE_1__["default"])(currentVirtualDom),
         "return": parentFiber,
-        effect: [],
+        effects: [],
         effectTag: 'MOUNT',
         child: null,
         sibling: null
@@ -111,21 +110,40 @@ function render(virtualDom, container) {
     if (fiber.props.children) {
       reconciler(fiber, fiber.props.children);
     }
+    /* 如果有子节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
+
 
     if (fiber.child) {
       return fiber.child;
     }
+    /* 定义变量接收一下当前正在处理的fiber对象 */
 
-    if (fiber.sibling) {
-      return fiber.sibling;
+
+    var currentHanlderFiber = fiber;
+    /**
+     * 如果没有子节点了，那就横向平移找到兄弟节点，尝试构建兄弟节点的子节点
+     * 如果当前这一级的兄弟节点都完毕了，就返回到父级，查看父级有没有需要构建子节点的兄弟节点
+     */
+
+    while (currentHanlderFiber["return"]) {
+      /* 构建父级的effects元素数组 */
+      currentHanlderFiber["return"].effects = currentHanlderFiber["return"].effects.concat(currentHanlderFiber.effects.concat(currentHanlderFiber));
+
+      if (currentHanlderFiber.sibling) {
+        return currentHanlderFiber.sibling;
+      }
+
+      currentHanlderFiber = currentHanlderFiber["return"];
     }
+
+    console.log(fiber);
   } // 循环执行工作任务
 
 
   function wordLoop(deadline) {
     // 准备执行任务了？发现没有任务
     if (!subTask && !isComplete) {
-      // 构建最外层的RootFiber对象
+      // 构建最外层的RootFiber对象`
       subTask = getFirstFiberTask();
     } // 浏览器空余时间大于一毫秒的话，就可以进行工作了
 
@@ -557,7 +575,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react-dom */ "./react16/src/react-dom/index.js");
 
 
-var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("span", null, "\u8FD9\u662F\u4E00\u4E2Aspan\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E"));
+var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("h1", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("span", null, "\u8FD9\u662F\u4E00\u4E2Aspan\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E"));
 var root = document.querySelector('#root');
 _react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render(jsx, root);
 })();

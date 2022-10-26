@@ -24,7 +24,7 @@ export default function render(virtualDom, container) {
             props: { children: virtualDom },
             stateNode: container,
             tag: HOST_ROOT,
-            effect: [],
+            effects: [],
             child: null,
         }
         return fiber
@@ -39,8 +39,6 @@ export default function render(virtualDom, container) {
 
         /* 防止出现对象的情况，所以统一转换成数组 */
         const childrens = toArray(virtualChilds)
-
-        console.log(parentFiber, 'parentFiber');
 
         /* 得出需要循环生成节点的次数 */
         let index = 0;
@@ -58,7 +56,7 @@ export default function render(virtualDom, container) {
                 type: currentVirtualDom.type,
                 tag: getTag(currentVirtualDom),
                 return: parentFiber,
-                effect: [],
+                effects: [],
                 effectTag: 'MOUNT',
                 child: null,
                 sibling: null,
@@ -81,15 +79,36 @@ export default function render(virtualDom, container) {
 
     // 执行单个工作任务
     function executeTask(fiber) {
+
         if (fiber.props.children) {
             reconciler(fiber, fiber.props.children)
         }
+
+        /* 如果有子节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
         if (fiber.child) {
             return fiber.child
         }
-        if (fiber.sibling) {
-            return fiber.sibling
+        
+        /* 定义变量接收一下当前正在处理的fiber对象 */
+        let currentHanlderFiber = fiber
+
+        /**
+         * 如果没有子节点了，那就横向平移找到兄弟节点，尝试构建兄弟节点的子节点
+         * 如果当前这一级的兄弟节点都完毕了，就返回到父级，查看父级有没有需要构建子节点的兄弟节点
+         */
+        while (currentHanlderFiber.return) {
+
+            /* 构建父级的effects元素数组 */
+            currentHanlderFiber.return.effects = currentHanlderFiber.return.effects.concat(currentHanlderFiber.effects.concat(currentHanlderFiber))
+
+            if (currentHanlderFiber.sibling) {
+                return currentHanlderFiber.sibling
+            }
+            currentHanlderFiber = currentHanlderFiber.return
         }
+
+        console.log(fiber);
+
     }
 
     // 循环执行工作任务
@@ -97,7 +116,7 @@ export default function render(virtualDom, container) {
 
         // 准备执行任务了？发现没有任务
         if (!subTask && !isComplete) {
-            // 构建最外层的RootFiber对象
+            // 构建最外层的RootFiber对象`
             subTask = getFirstFiberTask();
         }
 

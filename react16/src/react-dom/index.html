@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /**
+       * 数组中任意两个数的和加起来等于target，那么就返回这两个数的下标
+       * @param {number[]} nums
+       * @param {number} target
+       * @return {number[]}
+       */
+      var twoSum = function (nums, target) {
+        let result = [];
+        for (let i = 0; i < nums.length; i++) {
+            const sum1 = nums[i]
+            for (let j = i + 1; j < nums.length; j++) {
+                const sum2 = nums[j]
+                if (sum1 + sum2 === target) {
+                    result = result.concat([i, j])
+                }
+            }
+        }
+        return result;
+      };
+
+      var twoSum2 = function (nums, target) {
+        const map = new Map();
+        for (let i = 0; i < nums.length; i++) {
+            if (map.has(target - nums[i])) {
+                return [map.get(target - nums[i]), i];
+            }
+            // 数值作为key，索引作为value
+            map.set(nums[i], i)
+        }
+      };
+
+      console.log(twoSum([3, 2, 3], 6)); // [0, 2]
+      console.log(twoSum2([3, 2, 3], 6)); // [0, 2]
+    </script>
+  </body>
+</html>
