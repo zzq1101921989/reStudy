@@ -31,18 +31,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ render)
 /* harmony export */ });
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../util */ "./react16/src/util/index.js");
-/* harmony import */ var _util_tag__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/tag */ "./react16/src/util/tag.js");
+/* harmony import */ var _util_effectTag__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../util/effectTag */ "./react16/src/util/effectTag.js");
+/* harmony import */ var _util_tag__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../util/tag */ "./react16/src/util/tag.js");
 
 
-var taskQueue = new _util__WEBPACK_IMPORTED_MODULE_0__.CreateTaskQueue(); // 当前正在进行的任务
 
-var subTask = null; // 是否构建完成
+var taskQueue = new _util__WEBPACK_IMPORTED_MODULE_0__.CreateTaskQueue();
+/* 当前正在进行的任务 */
+
+var subTask = null;
+/* 是否构建完成 */
 
 var isComplete = false;
+/* 准备提交渲染 */
+
+var paddingCommit = null;
 /**
  * 挂载virtualDom，并且转换成Fiber
- * @param {*} virtualDom 
- * @param {*} container 
+ * @param {*} virtualDom
+ * @param {*} container
  */
 
 function render(virtualDom, container) {
@@ -55,7 +62,7 @@ function render(virtualDom, container) {
         children: virtualDom
       },
       stateNode: container,
-      tag: _util_tag__WEBPACK_IMPORTED_MODULE_1__.HOST_ROOT,
+      tag: _util_tag__WEBPACK_IMPORTED_MODULE_2__.HOST_ROOT,
       effects: [],
       child: null
     };
@@ -63,8 +70,8 @@ function render(virtualDom, container) {
   }
   /**
    * 构建父子fiber关系
-   * parentFiber 父fiber节点
-   * virtualChilds 子virtualDom节点对象
+   * @params parentFiber 父fiber节点
+   * @params virtualChilds 子virtualDom节点对象
    */
 
 
@@ -84,10 +91,10 @@ function render(virtualDom, container) {
       var newFiber = {
         props: currentVirtualDom.props,
         type: currentVirtualDom.type,
-        tag: (0,_util_tag__WEBPACK_IMPORTED_MODULE_1__["default"])(currentVirtualDom),
+        tag: (0,_util_tag__WEBPACK_IMPORTED_MODULE_2__["default"])(currentVirtualDom),
         "return": parentFiber,
         effects: [],
-        effectTag: 'MOUNT',
+        effectTag: _util_effectTag__WEBPACK_IMPORTED_MODULE_1__.PLACE_MENT,
         child: null,
         sibling: null
       };
@@ -103,14 +110,28 @@ function render(virtualDom, container) {
       preChildFiber = newFiber;
       index++;
     }
-  } // 执行单个工作任务
+  }
+  /**
+   * 提交渲染任务
+   * @params filer 最顶层的 rootFiber 对象
+   */
+
+
+  var commitAllWork = function commitAllWork(filer) {
+    filer.effects.forEach(function (item) {
+      /* 挂载节点 */
+      if (item.effectTag === _util_effectTag__WEBPACK_IMPORTED_MODULE_1__.PLACE_MENT) {
+        item["return"].stateNode.appendChild(item.stateNode);
+      }
+    });
+  }; // 执行单个工作任务
 
 
   function executeTask(fiber) {
     if (fiber.props.children) {
       reconciler(fiber, fiber.props.children);
     }
-    /* 如果有子节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
+    /* 如果有子fiber节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
 
 
     if (fiber.child) {
@@ -136,7 +157,8 @@ function render(virtualDom, container) {
       currentHanlderFiber = currentHanlderFiber["return"];
     }
 
-    console.log(fiber);
+    isComplete = true;
+    paddingCommit = currentHanlderFiber;
   } // 循环执行工作任务
 
 
@@ -151,6 +173,10 @@ function render(virtualDom, container) {
     if (deadline.timeRemaining() > 1) {
       while (subTask) {
         subTask = executeTask(subTask);
+      }
+
+      if (paddingCommit) {
+        commitAllWork(paddingCommit);
       }
     }
   } // 调度任务
@@ -316,6 +342,20 @@ var CreateTaskQueue = /*#__PURE__*/function () {
 }();
 
 
+
+/***/ }),
+
+/***/ "./react16/src/util/effectTag.js":
+/*!***************************************!*\
+  !*** ./react16/src/util/effectTag.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "PLACE_MENT": () => (/* binding */ PLACE_MENT)
+/* harmony export */ });
+var PLACE_MENT = 'placement';
 
 /***/ }),
 
