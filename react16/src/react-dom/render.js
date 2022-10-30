@@ -89,6 +89,7 @@ export default function render(virtualDom, container) {
   const commitAllWork = (filer) => {
     
     filer.effects.forEach((item) => {
+        
       /* 挂载节点 */
       if (item.effectTag === PLACE_MENT) {
 
@@ -96,6 +97,10 @@ export default function render(virtualDom, container) {
 
         let parentFiber = item.return;
 
+        /**
+         * effects数组构建的同时也会构建组件的fiber对象
+         * 但其实组件的fiber对象并不是一个真实可以挂载的dom对象，所以需要过滤掉，并且一层层的往上找
+         */
         while (parentFiber.tag === CLASS_COMPONENT) {
           parentFiber = parentFiber.return;
         }

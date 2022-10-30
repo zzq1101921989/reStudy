@@ -123,6 +123,10 @@ function render(virtualDom, container) {
       if (item.effectTag === _util_effectTag__WEBPACK_IMPORTED_MODULE_1__.PLACE_MENT) {
         var fiber = item;
         var parentFiber = item["return"];
+        /**
+         * effects数组构建的同时也会构建组件的fiber对象
+         * 但其实组件的fiber对象并不是一个真实可以挂载的dom对象，所以需要过滤掉，并且一层层的往上找
+         */
 
         while (parentFiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT) {
           parentFiber = parentFiber["return"];
