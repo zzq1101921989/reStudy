@@ -121,7 +121,16 @@ function render(virtualDom, container) {
     filer.effects.forEach(function (item) {
       /* 挂载节点 */
       if (item.effectTag === _util_effectTag__WEBPACK_IMPORTED_MODULE_1__.PLACE_MENT) {
-        item["return"].stateNode.appendChild(item.stateNode);
+        var fiber = item;
+        var parentFiber = item["return"];
+
+        while (parentFiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT) {
+          parentFiber = parentFiber["return"];
+        }
+
+        if (fiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.HOST_COMPONENT) {
+          parentFiber.stateNode.appendChild(fiber.stateNode);
+        }
       }
     });
   }; // 执行单个工作任务
@@ -129,7 +138,11 @@ function render(virtualDom, container) {
 
   function executeTask(fiber) {
     if (fiber.props.children) {
-      reconciler(fiber, fiber.props.children);
+      if (fiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT) {
+        reconciler(fiber, fiber.stateNode.render());
+      } else {
+        reconciler(fiber, fiber.props.children);
+      }
     }
     /* 如果有子fiber节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
 
@@ -201,6 +214,30 @@ function render(virtualDom, container) {
 
 /***/ }),
 
+/***/ "./react16/src/react/Component.js":
+/*!****************************************!*\
+  !*** ./react16/src/react/Component.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Component": () => (/* binding */ Component)
+/* harmony export */ });
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Component = /*#__PURE__*/_createClass(function Component(props) {
+  _classCallCheck(this, Component);
+
+  this.props = props;
+});
+
+/***/ }),
+
 /***/ "./react16/src/react/createElement.js":
 /*!********************************************!*\
   !*** ./react16/src/react/createElement.js ***!
@@ -258,11 +295,56 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _createElement__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createElement */ "./react16/src/react/createElement.js");
+/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Component */ "./react16/src/react/Component.js");
+/* harmony import */ var _createElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createElement */ "./react16/src/react/createElement.js");
+
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  createElement: _createElement__WEBPACK_IMPORTED_MODULE_0__["default"]
+  createElement: _createElement__WEBPACK_IMPORTED_MODULE_1__["default"],
+  Component: _Component__WEBPACK_IMPORTED_MODULE_0__.Component
 });
+
+/***/ }),
+
+/***/ "./react16/src/util/createClassComponentInstance.js":
+/*!**********************************************************!*\
+  !*** ./react16/src/util/createClassComponentInstance.js ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createClassComponentInstance)
+/* harmony export */ });
+/**
+ * 实例化类组件
+ * @param {*} fiber 
+ */
+function createClassComponentInstance(fiber) {
+  var instance = new fiber.type(fiber.props);
+  return instance;
+}
+
+/***/ }),
+
+/***/ "./react16/src/util/createDomElement.js":
+/*!**********************************************!*\
+  !*** ./react16/src/util/createDomElement.js ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ createDomElement)
+/* harmony export */ });
+function createDomElement(fiber) {
+  if (fiber.type === 'text') {
+    return document.createTextNode(fiber.props.textContent);
+  } else if (typeof fiber.type === 'string') {
+    return document.createElement(fiber.type);
+    updateNodeElementAttr(newElement, fiber.props);
+  }
+}
 
 /***/ }),
 
@@ -276,24 +358,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ createStateNode)
 /* harmony export */ });
-/* harmony import */ var _updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./updateNodeElementAttr */ "./react16/src/util/updateNodeElementAttr.js");
+/* harmony import */ var _createClassComponentInstance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createClassComponentInstance */ "./react16/src/util/createClassComponentInstance.js");
+/* harmony import */ var _createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createDomElement */ "./react16/src/util/createDomElement.js");
+/* harmony import */ var _tag__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./tag */ "./react16/src/util/tag.js");
+
+
 
 /**
  * 当fiber中的tag === host_component的时候就需要创建dom元素
- * @param {*} fiber 
+ * @param {*} fiber
  */
 
 function createStateNode(fiber) {
-  var newElement = null;
+  switch (fiber.tag) {
+    /* 处理普通元素情况 */
+    case _tag__WEBPACK_IMPORTED_MODULE_2__.HOST_COMPONENT:
+      return (0,_createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"])(fiber);
 
-  if (fiber.type === 'text') {
-    newElement = document.createTextNode(fiber.props.textContent);
-  } else {
-    newElement = document.createElement(fiber.type);
-    (0,_updateNodeElementAttr__WEBPACK_IMPORTED_MODULE_0__["default"])(newElement, fiber.props);
+    /* 处理类组件的情况 */
+
+    case _tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT:
+      return (0,_createClassComponentInstance__WEBPACK_IMPORTED_MODULE_0__["default"])(fiber);
+
+    /* 处理函数组件的情况 */
+
+    case _tag__WEBPACK_IMPORTED_MODULE_2__.FUNCTION_COMPONENT:
+      return null;
   }
-
-  return newElement;
 }
 
 /***/ }),
@@ -367,13 +458,19 @@ var PLACE_MENT = 'placement';
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_1__["default"]),
-/* harmony export */   "createStateNode": () => (/* reexport safe */ _createStateNode__WEBPACK_IMPORTED_MODULE_0__["default"]),
-/* harmony export */   "toArray": () => (/* reexport safe */ _toArray__WEBPACK_IMPORTED_MODULE_2__["default"])
+/* harmony export */   "CreateTaskQueue": () => (/* reexport safe */ _createTaskQueue__WEBPACK_IMPORTED_MODULE_3__["default"]),
+/* harmony export */   "createClassComponentInstance": () => (/* reexport safe */ _createClassComponentInstance__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "createDomElement": () => (/* reexport safe */ _createDomElement__WEBPACK_IMPORTED_MODULE_1__["default"]),
+/* harmony export */   "createStateNode": () => (/* reexport safe */ _createStateNode__WEBPACK_IMPORTED_MODULE_2__["default"]),
+/* harmony export */   "toArray": () => (/* reexport safe */ _toArray__WEBPACK_IMPORTED_MODULE_4__["default"])
 /* harmony export */ });
-/* harmony import */ var _createStateNode__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createStateNode */ "./react16/src/util/createStateNode.js");
-/* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
-/* harmony import */ var _toArray__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./toArray */ "./react16/src/util/toArray.js");
+/* harmony import */ var _createClassComponentInstance__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./createClassComponentInstance */ "./react16/src/util/createClassComponentInstance.js");
+/* harmony import */ var _createDomElement__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createDomElement */ "./react16/src/util/createDomElement.js");
+/* harmony import */ var _createStateNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./createStateNode */ "./react16/src/util/createStateNode.js");
+/* harmony import */ var _createTaskQueue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./createTaskQueue */ "./react16/src/util/createTaskQueue.js");
+/* harmony import */ var _toArray__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./toArray */ "./react16/src/util/toArray.js");
+
+
 
 
 
@@ -394,10 +491,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "HOST_ROOT": () => (/* binding */ HOST_ROOT),
 /* harmony export */   "default": () => (/* binding */ getTag)
 /* harmony export */ });
-var HOST_ROOT = 'hoot_root';
-var HOST_COMPONENT = 'hoot_component';
-var FUNCTION_COMPONENT = 'function_component';
-var CLASS_COMPONENT = 'class_component';
+/* harmony import */ var _react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../react */ "./react16/src/react/index.js");
+
+var HOST_ROOT = "hoot_root";
+var HOST_COMPONENT = "hoot_component";
+var FUNCTION_COMPONENT = "function_component";
+var CLASS_COMPONENT = "class_component";
 /**
  * 获取fiber中的tag属性
  * @param {*} vDom virtualDom节点
@@ -405,8 +504,11 @@ var CLASS_COMPONENT = 'class_component';
 
 function getTag(vDom) {
   switch (true) {
-    case typeof vDom.type == 'string':
+    case typeof vDom.type == "string":
       return HOST_COMPONENT;
+
+    case Object.getPrototypeOf(vDom.type) === _react__WEBPACK_IMPORTED_MODULE_0__["default"].Component:
+      return CLASS_COMPONENT;
   }
 }
 
@@ -424,126 +526,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 function toArray(arg) {
   return Array.isArray(arg) ? arg : [arg];
-}
-
-/***/ }),
-
-/***/ "./react16/src/util/updateNodeElementAttr.js":
-/*!***************************************************!*\
-  !*** ./react16/src/util/updateNodeElementAttr.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ updateNodeElementAttr)
-/* harmony export */ });
-/**
- * 更新节点的属性，比如className、实践、style、type、value、data-xxx等
- * @param {HTMLElement} element 需要绑定属性的html元素
- * @param {*} newProps 新的属性对象，key代表属性名称，value代表属性的值
- * @param {*} oldProps 旧的属性对象，用于和新的props作对比，从而找出差异的部分
- */
-function updateNodeElementAttr(element, newProps) {
-  var oldProps = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  // 正常的进行遍历
-  Object.keys(newProps).forEach(function (propName) {
-    var newPropValue = newProps[propName];
-    var oldPropValue = oldProps[propName];
-
-    if (newPropValue !== oldPropValue) {
-      // 绑定事件
-      if (isBindEvent(propName)) {
-        var eventName = propName.toLowerCase().slice(2);
-        element.addEventListener(eventName, newPropValue);
-
-        if (oldPropValue) {
-          element.removeEventListener(eventName, oldPropValue);
-        }
-      } // 绑定表单的属性
-      else if (isBindInputHtmlAttr(propName)) {
-        element[propName] = newPropValue;
-      } // 是否绑定类名
-      else if (isBindClassName(propName)) {
-        element.setAttribute("class", newPropValue);
-      } // 行内样式表
-      else if (isBindStyle(propName)) {
-        handlerCssStyle(element, newPropValue);
-      } else if (propName !== "children" && propName !== "ref") {
-        element.setAttribute(propName, newPropValue);
-      }
-    }
-  }); // 既然有了oldProps，那就证明是更新的时候了，看看有没有需要删除的属性
-
-  Object.keys(oldProps).forEach(function (propName) {
-    var newPropValue = newProps[propName];
-    var oldPropValue = oldProps[propName];
-
-    if (!newPropValue) {
-      if (isBindEvent(propName)) {
-        element.removeEventListener(propName, oldPropValue);
-      } else {
-        element.removeAttribute(propName);
-      }
-    }
-  });
-}
-/**
- * 当前的属性是否是事件属性
- * @param {*} key 属性名称
- * @return {boolean}
- */
-
-function isBindEvent(key) {
-  return key.slice(0, 2) === "on";
-}
-/**
- * 当前的属性是否是表单相关的
- * @param {*} key 属性名称
- * @return {boolean}
- */
-
-
-function isBindInputHtmlAttr(key) {
-  return ["value", "checked"].includes(key);
-}
-/**
- * 当前的属性是否是类名
- * @param {*} key 属性名称
- * @return {boolean}
- */
-
-
-function isBindClassName(key) {
-  return key === "className";
-}
-/**
- * 当前的属性是否是行内样式
- * @param {*} key 属性名称
- * @return {boolean}
- */
-
-
-function isBindStyle(key) {
-  return key === "style";
-}
-/**
- * 处理style样式
- * @param {HTMLElement} element
- * @param {Object} styleValue
- * @return {string} 返回的是 width: 100px;height: 100px 类似这种css文本
- */
-
-
-function handlerCssStyle(element, styleValue) {
-  if (styleValue instanceof Object) {
-    Object.keys(styleValue).map(function (propName) {
-      var value = styleValue[propName];
-      element.style[propName] = value;
-    });
-  } else {
-    throw new Error("暂时只支持传入对象类型的style属性");
-  }
 }
 
 /***/ })
@@ -613,11 +595,56 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./react */ "./react16/src/react/index.js");
 /* harmony import */ var _react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./react-dom */ "./react16/src/react-dom/index.js");
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
 
 
 var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("h1", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("span", null, "\u8FD9\u662F\u4E00\u4E2Aspan\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B501div\u6807\u7B7E"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("p", null, "\u8FD9\u662F\u513F\u5B502div\u6807\u7B7E"));
-var root = document.querySelector('#root');
-_react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render(jsx, root);
+
+var Parent = /*#__PURE__*/function (_React$Component) {
+  _inherits(Parent, _React$Component);
+
+  var _super = _createSuper(Parent);
+
+  function Parent(props) {
+    _classCallCheck(this, Parent);
+
+    return _super.call(this, props);
+  }
+
+  _createClass(Parent, [{
+    key: "render",
+    value: function render() {
+      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u4E00\u4E2A\u7C7B\u7EC4\u4EF6");
+    }
+  }]);
+
+  return Parent;
+}(_react__WEBPACK_IMPORTED_MODULE_0__["default"].Component);
+
+var root = document.querySelector("#root"); // ReactDom.render(jsx, root);
+
+_react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render( /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement(Parent, null), root);
 })();
 
 /******/ })()

@@ -1,6 +1,10 @@
 import { createStateNode, CreateTaskQueue, toArray } from "../util";
 import { PLACE_MENT } from "../util/effectTag";
-import getTag, { HOST_ROOT } from "../util/tag";
+import getTag, {
+    CLASS_COMPONENT,
+    HOST_COMPONENT,
+    HOST_ROOT
+} from "../util/tag";
 
 const taskQueue = new CreateTaskQueue();
 
@@ -82,19 +86,35 @@ export default function render(virtualDom, container) {
    * 提交渲染任务
    * @params filer 最顶层的 rootFiber 对象
    */
-  const commitAllWork = filer => {
-    filer.effects.forEach(item => {
-        /* 挂载节点 */
-        if (item.effectTag === PLACE_MENT) {
-            item.return.stateNode.appendChild(item.stateNode)
+  const commitAllWork = (filer) => {
+    
+    filer.effects.forEach((item) => {
+      /* 挂载节点 */
+      if (item.effectTag === PLACE_MENT) {
+
+        const fiber = item;
+
+        let parentFiber = item.return;
+
+        while (parentFiber.tag === CLASS_COMPONENT) {
+          parentFiber = parentFiber.return;
         }
-    })
-  }
+
+        if (fiber.tag === HOST_COMPONENT) {
+          parentFiber.stateNode.appendChild(fiber.stateNode);
+        }
+      }
+    });
+  };
 
   // 执行单个工作任务
   function executeTask(fiber) {
     if (fiber.props.children) {
-      reconciler(fiber, fiber.props.children);
+      if (fiber.tag === CLASS_COMPONENT) {
+        reconciler(fiber, fiber.stateNode.render());
+      } else {
+        reconciler(fiber, fiber.props.children);
+      }
     }
 
     /* 如果有子fiber节点，那就继续向下构建咯（深度优先遍历 --- 递归） */
@@ -121,7 +141,7 @@ export default function render(virtualDom, container) {
       }
       currentHanlderFiber = currentHanlderFiber.return;
     }
-    
+
     isComplete = true;
     paddingCommit = currentHanlderFiber;
   }
@@ -141,7 +161,7 @@ export default function render(virtualDom, container) {
       }
 
       if (paddingCommit) {
-        commitAllWork(paddingCommit)
+        commitAllWork(paddingCommit);
       }
     }
   }

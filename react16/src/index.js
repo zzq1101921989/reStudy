@@ -1,5 +1,5 @@
-import React from './react';
-import ReactDom from './react-dom';
+import React from "./react";
+import ReactDom from "./react-dom";
 
 const jsx = (
   <h1>
@@ -9,6 +9,16 @@ const jsx = (
   </h1>
 );
 
-const root = document.querySelector('#root');
+class Parent extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return <div>这是一个类组件</div>
+  }
+}
 
-ReactDom.render(jsx, root);
+const root = document.querySelector("#root");
+
+// ReactDom.render(jsx, root);
+ReactDom.render(<Parent />, root);
