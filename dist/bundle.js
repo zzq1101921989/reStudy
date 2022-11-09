@@ -128,7 +128,7 @@ function render(virtualDom, container) {
          * 但其实组件的fiber对象并不是一个真实可以挂载的dom对象，所以需要过滤掉，并且一层层的往上找
          */
 
-        while (parentFiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT) {
+        while (parentFiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT || parentFiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.FUNCTION_COMPONENT) {
           parentFiber = parentFiber["return"];
         }
 
@@ -141,9 +141,13 @@ function render(virtualDom, container) {
 
 
   function executeTask(fiber) {
+    console.log(fiber, 'fiber');
+
     if (fiber.props.children) {
       if (fiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.CLASS_COMPONENT) {
         reconciler(fiber, fiber.stateNode.render());
+      } else if (fiber.tag === _util_tag__WEBPACK_IMPORTED_MODULE_2__.FUNCTION_COMPONENT) {
+        reconciler(fiber, fiber.stateNode(fiber.props));
       } else {
         reconciler(fiber, fiber.props.children);
       }
@@ -387,7 +391,7 @@ function createStateNode(fiber) {
     /* 处理函数组件的情况 */
 
     case _tag__WEBPACK_IMPORTED_MODULE_2__.FUNCTION_COMPONENT:
-      return null;
+      return fiber.type;
   }
 }
 
@@ -513,6 +517,9 @@ function getTag(vDom) {
 
     case Object.getPrototypeOf(vDom.type) === _react__WEBPACK_IMPORTED_MODULE_0__["default"].Component:
       return CLASS_COMPONENT;
+
+    case typeof vDom.type === 'function':
+      return FUNCTION_COMPONENT;
   }
 }
 
@@ -646,9 +653,14 @@ var Parent = /*#__PURE__*/function (_React$Component) {
   return Parent;
 }(_react__WEBPACK_IMPORTED_MODULE_0__["default"].Component);
 
-var root = document.querySelector("#root"); // ReactDom.render(jsx, root);
+function FunComponent() {
+  return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement("div", null, "\u8FD9\u662F\u4E00\u4E2A\u51FD\u6570\u7EC4\u4EF6");
+}
 
-_react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render( /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement(Parent, null), root);
+var root = document.querySelector("#root"); // ReactDom.render(jsx, root);
+// ReactDom.render(<Parent />, root);
+
+_react_dom__WEBPACK_IMPORTED_MODULE_1__["default"].render( /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__["default"].createElement(FunComponent, null), root);
 })();
 
 /******/ })()

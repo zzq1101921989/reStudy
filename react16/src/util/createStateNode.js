@@ -8,7 +8,6 @@ import { CLASS_COMPONENT, FUNCTION_COMPONENT, HOST_COMPONENT } from "./tag";
  */
 export default function createStateNode(fiber) {
   switch (fiber.tag) {
-
     /* 处理普通元素情况 */
     case HOST_COMPONENT:
       return createDomElement(fiber);
@@ -19,6 +18,6 @@ export default function createStateNode(fiber) {
       
     /* 处理函数组件的情况 */
     case FUNCTION_COMPONENT:
-      return null;
+      return fiber.type;
   }
 }

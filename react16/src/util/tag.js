@@ -15,5 +15,7 @@ export default function getTag(vDom) {
       return HOST_COMPONENT;
     case Object.getPrototypeOf(vDom.type) === React.Component:
       return CLASS_COMPONENT;
+    case typeof vDom.type === 'function':
+      return FUNCTION_COMPONENT;
   }
 }

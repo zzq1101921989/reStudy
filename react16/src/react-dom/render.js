@@ -1,9 +1,10 @@
 import { createStateNode, CreateTaskQueue, toArray } from "../util";
 import { PLACE_MENT } from "../util/effectTag";
 import getTag, {
-    CLASS_COMPONENT,
-    HOST_COMPONENT,
-    HOST_ROOT
+  CLASS_COMPONENT,
+  FUNCTION_COMPONENT,
+  HOST_COMPONENT,
+  HOST_ROOT
 } from "../util/tag";
 
 const taskQueue = new CreateTaskQueue();
@@ -101,7 +102,7 @@ export default function render(virtualDom, container) {
          * effects数组构建的同时也会构建组件的fiber对象
          * 但其实组件的fiber对象并不是一个真实可以挂载的dom对象，所以需要过滤掉，并且一层层的往上找
          */
-        while (parentFiber.tag === CLASS_COMPONENT) {
+        while (parentFiber.tag === CLASS_COMPONENT || parentFiber.tag === FUNCTION_COMPONENT) {
           parentFiber = parentFiber.return;
         }
 
@@ -114,9 +115,12 @@ export default function render(virtualDom, container) {
 
   // 执行单个工作任务
   function executeTask(fiber) {
+    console.log(fiber, 'fiber');
     if (fiber.props.children) {
       if (fiber.tag === CLASS_COMPONENT) {
         reconciler(fiber, fiber.stateNode.render());
+      } else if (fiber.tag === FUNCTION_COMPONENT) {
+        reconciler(fiber, fiber.stateNode(fiber.props));
       } else {
         reconciler(fiber, fiber.props.children);
       }

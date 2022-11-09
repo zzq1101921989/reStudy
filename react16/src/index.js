@@ -18,7 +18,12 @@ class Parent extends React.Component {
   }
 }
 
+function FunComponent() {
+  return <div>这是一个函数组件</div>
+}
+
 const root = document.querySelector("#root");
 
 // ReactDom.render(jsx, root);
-ReactDom.render(<Parent />, root);
+// ReactDom.render(<Parent />, root);
+ReactDom.render(<FunComponent />, root);
